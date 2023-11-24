@@ -8,6 +8,7 @@ All assignments can be stored in memories and recalled from the patch menu and n
 
 # Features
 
+* Menu driven setup
 * 16 Assignable CV outputs
 * 4 Fixed CV outputs
 * 8 Assignable gates
