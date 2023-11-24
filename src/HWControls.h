@@ -41,24 +41,27 @@
 #define ENC_A 38
 #define ENC_B 37
 #define RECALL_SW 36
-#define SAVE_SW 39
-#define SETTINGS_SW 40
-#define BACK_SW 41
+
+#define ENCODER_PARAMA 41
+#define ENCODER_PARAMB 40
+#define ENCODER_PREVIOUS 39
+
+#define SAVE_SW 33
+#define SETTINGS_SW 34
+#define BACK_SW 35
 
 #define DEBOUNCE 30
 
 static long encPrevious = 0;
-
-
-// #define AUTOTUNE 17
-
-// #define UNISON_ON 2
+static long param_encPrevious = 0;
 
 TButton recallButton{RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton saveButton{SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton settingsButton{SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton backButton{BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-Encoder encoder(ENC_B, ENC_A);//This often needs the pins swapping depending on the encoder
+TButton paramButton{ENCODER_PREVIOUS, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
+Encoder encoder(ENC_B, ENC_A); //This often needs the pins swapping depending on the encoder
+Encoder param_encoder(ENCODER_PARAMA, ENCODER_PARAMB);
 
 void setupHardware() {
 
@@ -111,7 +114,7 @@ void setupHardware() {
   analogWriteFrequency(BREATH, 9155.27);
 
   pinMode(RECALL_SW, INPUT_PULLUP);
-
+  pinMode(ENCODER_PREVIOUS, INPUT_PULLUP);
   pinMode(SAVE_SW, INPUT_PULLUP);
   pinMode(SETTINGS_SW, INPUT_PULLUP);
   pinMode(BACK_SW, INPUT_PULLUP);
