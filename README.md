@@ -9,6 +9,7 @@ All assignments can be stored in memories and recalled from the patch menu and n
 # Features
 
 * Menu driven setup
+* Up to 8 note polyphonic MIDI to CV with velocity
 * 16 Assignable CV outputs
 * 4 Fixed CV outputs
 * 8 Assignable gates
