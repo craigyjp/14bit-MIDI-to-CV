@@ -56,7 +56,7 @@
 
 unsigned int state = PARAMETER;
 
-#include "ST7735Display.h"
+#include "SSD1306Display.h"
 
 boolean cardStatus = false;
 
