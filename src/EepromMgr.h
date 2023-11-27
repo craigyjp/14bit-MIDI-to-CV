@@ -6,6 +6,7 @@
 #define EEPROM_PITCHBEND 3
 #define EEPROM_MODWHEEL_DEPTH 4
 #define EEPROM_LAST_PATCH 5
+#define EEPROM_GATE_CH 6
 
 // EEPROM Addresses
 
@@ -24,6 +25,17 @@ int getMIDIChannel() {
 void storeMidiChannel(byte channel)
 {
   EEPROM.update(EEPROM_MIDI_CH, channel);
+}
+
+int getGATEChannel() {
+  byte gateChannel = EEPROM.read(EEPROM_GATE_CH);
+  if (gateChannel < 0 || gateChannel > 16) gateChannel = MIDI_CHANNEL_OMNI;//If EEPROM has no MIDI channel stored
+  return gateChannel;
+}
+
+void storeGATEChannel(byte channel)
+{
+  EEPROM.update(EEPROM_GATE_CH, channel);
 }
 
 int getKeyMode() {

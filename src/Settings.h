@@ -1,12 +1,14 @@
 #include "SettingsService.h"
 
 void settingsMIDICh(int index, const char *value);
+void settingsGATECh(int index, const char *value);
 void settingsKeyMode(int index, const char *value);
 void settingsTranspose(int index, const char *value);
 void settingsModWheelDepth(int index, const char *value);
 void settingsEncoderDir(char *value);
 
 int currentIndexMIDICh();
+int currentIndexGATECh();
 int currentKeyMode();
 int currentIndexTranspose();
 int currentIndexModWheelDepth();
@@ -19,6 +21,15 @@ void settingsMIDICh(int index, const char *value) {
     midiChannel = atoi(value);
   }
   storeMidiChannel(midiChannel);
+}
+
+void settingsGATECh(int index, const char *value) {
+  if (strcmp(value, "All") == 0) {
+    gateChannel = MIDI_CHANNEL_OMNI;
+  } else {
+    gateChannel = atoi(value);
+  }
+  storeGATEChannel(gateChannel);
 }
 
 void settingsKeyMode(int index, const char *value) {
@@ -157,6 +168,10 @@ int currentIndexMIDICh() {
   return getMIDIChannel();
 }
 
+int currentIndexGATECh() {
+  return getGATEChannel();
+}
+
 int currentIndexKeyMode() {
   return getKeyMode();
 }
@@ -176,6 +191,7 @@ int currentIndexEncoderDir() {
 // add settings to the circular buffer
 void setUpSettings() {
   settings::append(settings::SettingsOption{ "MIDI Ch.", { "All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "\0" }, settingsMIDICh, currentIndexMIDICh });
+  settings::append(settings::SettingsOption{ "Gate Ch.", { "All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "\0" }, settingsGATECh, currentIndexGATECh });
   settings::append(settings::SettingsOption{ "Key Mode", { "Poly", "Unison T", "Unison B", "Unison L", "Mono T", "Mono B", "Mono L", "\0" }, settingsKeyMode, currentIndexKeyMode });
   settings::append(settings::SettingsOption{ "Transpose", { "-12", "-11", "-10", "-9", "-8", "-7", "-6", "-5", "-4", "-3", "-2", "-1", "0", "+1", "+2", "+3", "+4", "+5", "+6", "+7", "+8", "+9", "+10", "+11", "+12", "\0" }, settingsTranspose, currentIndexTranspose });
   settings::append(settings::SettingsOption{ "Octave", { "-2", "-1", "0", "+1", "+2", "\0" }, settingsOctave, currentIndexOctave });

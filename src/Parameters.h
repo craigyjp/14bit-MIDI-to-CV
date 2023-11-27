@@ -12,8 +12,18 @@ int param_number = 0;
 boolean paramEdit = false;
 boolean paramChange = false;
 
+unsigned int mV1;
+unsigned int mV2;
+unsigned int mV3;
+unsigned int mV4;
+unsigned int mV5;
+unsigned int mV6;
+unsigned int mV7;
+unsigned int mV8;
+
 //Values below are just for initialising and will be changed when synth is initialised to current panel controls & EEPROM settings
 byte midiChannel = 1;//(EEPROM)
+byte gateChannel = 2;//(EEPROM)
 
 int polycount = 0;
 int channel1 = 0;

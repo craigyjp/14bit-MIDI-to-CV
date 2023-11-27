@@ -82,7 +82,6 @@ long earliestTime = millis();  //For voice allocation - initialise to now
 int prevNote = 0;              //Initialised to middle value
 bool notes[128] = { 0 }, initial_loop = 1;
 int8_t noteOrder[40] = { 0 }, orderIndx = { 0 };
-bool S1, S2;
 
 // MIDI setup
 
@@ -93,7 +92,7 @@ USBHub hub2(myusb);
 MIDIDevice midi1(myusb);
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
-const int channel = 1;
+int channel = 1;
 
 int patchNo = 1;  //Current patch no
 
@@ -108,7 +107,7 @@ void setup() {
 
   sr.begin(PIN_DATA, PIN_LATCH, PIN_CLK, PIN_PWM);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // OLED I2C Address, may need to change for different device,
-  Wire.setClock(200000L);  // Uncomment to slow down I2C speed
+  Wire.setClock(200000L);                     // Uncomment to slow down I2C speed
 
   setupDisplay();
   setUpSettings();
@@ -139,7 +138,7 @@ void setup() {
   Serial.println("USB HOST MIDI Class Compliant Listening");
 
   //MIDI 5 Pin DIN
-  MIDI.begin(midiChannel);
+  MIDI.begin(0);
   MIDI.setHandleNoteOn(myNoteOn);
   MIDI.setHandleNoteOff(myNoteOff);
   MIDI.setHandlePitchBend(myPitchBend);
@@ -166,6 +165,7 @@ void setup() {
 
   // MIDI Channel
   midiChannel = EEPROM.read(EEPROM_MIDI_CH);
+  gateChannel = EEPROM.read(EEPROM_GATE_CH);
 
   // Transpose amount
   transpose = EEPROM.read(ADDR_TRANSPOSE);
@@ -387,14 +387,7 @@ void commandTopNoteUni() {
   if (noteActive) {
     commandNoteUni(topNote);
   } else {  // All notes are off, turn off gate
-    sr.writePin(GATE_NOTE1, LOW);
-    sr.writePin(GATE_NOTE2, LOW);
-    sr.writePin(GATE_NOTE3, LOW);
-    sr.writePin(GATE_NOTE4, LOW);
-    sr.writePin(GATE_NOTE5, LOW);
-    sr.writePin(GATE_NOTE6, LOW);
-    sr.writePin(GATE_NOTE7, LOW);
-    sr.writePin(GATE_NOTE8, LOW);
+    updateGates(0);
   }
 }
 
@@ -412,14 +405,7 @@ void commandBottomNoteUni() {
   if (noteActive) {
     commandNoteUni(bottomNote);
   } else {  // All notes are off, turn off gate
-    sr.writePin(GATE_NOTE1, LOW);
-    sr.writePin(GATE_NOTE2, LOW);
-    sr.writePin(GATE_NOTE3, LOW);
-    sr.writePin(GATE_NOTE4, LOW);
-    sr.writePin(GATE_NOTE5, LOW);
-    sr.writePin(GATE_NOTE6, LOW);
-    sr.writePin(GATE_NOTE7, LOW);
-    sr.writePin(GATE_NOTE8, LOW);
+    updateGates(0);
   }
 }
 
@@ -434,292 +420,539 @@ void commandLastNoteUni() {
       return;
     }
   }
-  sr.writePin(GATE_NOTE1, LOW);
-  sr.writePin(GATE_NOTE2, LOW);
-  sr.writePin(GATE_NOTE3, LOW);
-  sr.writePin(GATE_NOTE4, LOW);
-  sr.writePin(GATE_NOTE5, LOW);
-  sr.writePin(GATE_NOTE6, LOW);
-  sr.writePin(GATE_NOTE7, LOW);
-  sr.writePin(GATE_NOTE8, LOW);
+  updateGates(0);
   // All notes are off
 }
 
+void updateGates(int gatestate) {
+  switch (polycount) {
+    case 1:
+      sr.writePin(GATE_NOTE1, gatestate);
+      break;
+
+    case 2:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      break;
+
+    case 3:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      break;
+
+    case 4:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      sr.writePin(GATE_NOTE4, gatestate);
+      break;
+
+    case 5: 
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      sr.writePin(GATE_NOTE4, gatestate);
+      sr.writePin(GATE_NOTE5, gatestate);
+      break;
+
+    case 6:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      sr.writePin(GATE_NOTE4, gatestate);
+      sr.writePin(GATE_NOTE5, gatestate);
+      sr.writePin(GATE_NOTE6, gatestate);
+      break;
+
+    case 7:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      sr.writePin(GATE_NOTE4, gatestate);
+      sr.writePin(GATE_NOTE5, gatestate);
+      sr.writePin(GATE_NOTE6, gatestate);
+      sr.writePin(GATE_NOTE7, gatestate);
+      break;
+
+    case 8:
+      sr.writePin(GATE_NOTE1, gatestate);
+      sr.writePin(GATE_NOTE2, gatestate);
+      sr.writePin(GATE_NOTE3, gatestate);
+      sr.writePin(GATE_NOTE4, gatestate);
+      sr.writePin(GATE_NOTE5, gatestate);
+      sr.writePin(GATE_NOTE6, gatestate);
+      sr.writePin(GATE_NOTE7, gatestate);
+      sr.writePin(GATE_NOTE8, gatestate);
+  }
+}
+
 void commandNoteUni(int noteMsg) {
+  switch (polycount) {
+    case 1:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      updateGates(1);
+      break;
 
-  unsigned int mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
-  analogWrite(NOTE1, mV1);
-  unsigned int mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
-  analogWrite(NOTE2, mV2);
-  unsigned int mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
-  analogWrite(NOTE3, mV3);
-  unsigned int mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
-  analogWrite(NOTE4, mV4);
-  unsigned int mV5 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[4] + 0.5);
-  analogWrite(NOTE5, mV5);
-  unsigned int mV6 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[5] + 0.5);
-  analogWrite(NOTE6, mV6);
-  unsigned int mV7 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[6] + 0.5);
-  analogWrite(NOTE7, mV7);
-  unsigned int mV8 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[7] + 0.5);
-  analogWrite(NOTE8, mV8);
+    case 2:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      updateGates(1);
+      break;
 
-  sr.writePin(GATE_NOTE1, HIGH);
-  sr.writePin(GATE_NOTE2, HIGH);
-  sr.writePin(GATE_NOTE3, HIGH);
-  sr.writePin(GATE_NOTE4, HIGH);
-  sr.writePin(GATE_NOTE5, HIGH);
-  sr.writePin(GATE_NOTE6, HIGH);
-  sr.writePin(GATE_NOTE7, HIGH);
-  sr.writePin(GATE_NOTE8, HIGH);
+    case 3:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      updateGates(1);
+      break;
+
+    case 4:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
+      analogWrite(NOTE4, mV4);
+      updateGates(1);
+      break;
+
+    case 5:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
+      analogWrite(NOTE4, mV4);
+      mV5 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[4] + 0.5);
+      analogWrite(NOTE5, mV5);
+      updateGates(1);
+      break;
+
+    case 6:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
+      analogWrite(NOTE4, mV4);
+      mV5 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[4] + 0.5);
+      analogWrite(NOTE5, mV5);
+      mV6 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[5] + 0.5);
+      analogWrite(NOTE6, mV6);
+      updateGates(1);
+      break;
+
+    case 7:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
+      analogWrite(NOTE4, mV4);
+      mV5 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[4] + 0.5);
+      analogWrite(NOTE5, mV5);
+      mV6 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[5] + 0.5);
+      analogWrite(NOTE6, mV6);
+      mV7 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[6] + 0.5);
+      analogWrite(NOTE7, mV7);
+      updateGates(1);
+      break;
+
+    case 8:
+      mV1 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
+      analogWrite(NOTE1, mV1);
+      mV2 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[1] + 0.5);
+      analogWrite(NOTE2, mV2);
+      mV3 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[2] + 0.5);
+      analogWrite(NOTE3, mV3);
+      mV4 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[3] + 0.5);
+      analogWrite(NOTE4, mV4);
+      mV5 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[4] + 0.5);
+      analogWrite(NOTE5, mV5);
+      mV6 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[5] + 0.5);
+      analogWrite(NOTE6, mV6);
+      mV7 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[6] + 0.5);
+      analogWrite(NOTE7, mV7);
+      mV8 = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[7] + 0.5);
+      analogWrite(NOTE8, mV8);
+      updateGates(1);
+      break;
+  }
 }
 
 void myNoteOn(byte channel, byte note, byte velocity) {
-  //Check for out of range notes
-  if (note < 0 || note > 127) return;
+  if (channel == midiChannel) {
+    //Check for out of range notes
+    if (note < 0 || note > 127) return;
 
-  prevNote = note;
-  if (keyboardMode == 0) {
-    switch (getVoiceNo(-1)) {
-      case 1:
-        voices[0].note = note;
-        voices[0].velocity = velocity;
-        voices[0].timeOn = millis();
-        updateVoice1();
-        sr.writePin(GATE_NOTE1, HIGH);
-        voiceOn[0] = true;
-        break;
+    prevNote = note;
+    if (keyboardMode == 0) {
+      switch (getVoiceNo(-1)) {
+        case 1:
+          voices[0].note = note;
+          voices[0].velocity = velocity;
+          voices[0].timeOn = millis();
+          updateVoice1();
+          sr.writePin(GATE_NOTE1, HIGH);
+          voiceOn[0] = true;
+          break;
 
-      case 2:
-        voices[1].note = note;
-        voices[1].velocity = velocity;
-        voices[1].timeOn = millis();
-        updateVoice2();
-        sr.writePin(GATE_NOTE2, HIGH);
-        voiceOn[1] = true;
-        break;
+        case 2:
+          voices[1].note = note;
+          voices[1].velocity = velocity;
+          voices[1].timeOn = millis();
+          updateVoice2();
+          sr.writePin(GATE_NOTE2, HIGH);
+          voiceOn[1] = true;
+          break;
 
-      case 3:
-        voices[2].note = note;
-        voices[2].velocity = velocity;
-        voices[2].timeOn = millis();
-        updateVoice3();
-        sr.writePin(GATE_NOTE3, HIGH);
-        voiceOn[2] = true;
-        break;
+        case 3:
+          voices[2].note = note;
+          voices[2].velocity = velocity;
+          voices[2].timeOn = millis();
+          updateVoice3();
+          sr.writePin(GATE_NOTE3, HIGH);
+          voiceOn[2] = true;
+          break;
 
-      case 4:
-        voices[3].note = note;
-        voices[3].velocity = velocity;
-        voices[3].timeOn = millis();
-        updateVoice4();
-        sr.writePin(GATE_NOTE4, HIGH);
-        voiceOn[3] = true;
-        break;
+        case 4:
+          voices[3].note = note;
+          voices[3].velocity = velocity;
+          voices[3].timeOn = millis();
+          updateVoice4();
+          sr.writePin(GATE_NOTE4, HIGH);
+          voiceOn[3] = true;
+          break;
 
-      case 5:
-        voices[4].note = note;
-        voices[4].velocity = velocity;
-        voices[4].timeOn = millis();
-        updateVoice5();
-        sr.writePin(GATE_NOTE5, HIGH);
-        voiceOn[4] = true;
-        break;
+        case 5:
+          voices[4].note = note;
+          voices[4].velocity = velocity;
+          voices[4].timeOn = millis();
+          updateVoice5();
+          sr.writePin(GATE_NOTE5, HIGH);
+          voiceOn[4] = true;
+          break;
 
-      case 6:
-        voices[5].note = note;
-        voices[5].velocity = velocity;
-        voices[5].timeOn = millis();
-        updateVoice6();
-        sr.writePin(GATE_NOTE6, HIGH);
-        voiceOn[5] = true;
-        break;
+        case 6:
+          voices[5].note = note;
+          voices[5].velocity = velocity;
+          voices[5].timeOn = millis();
+          updateVoice6();
+          sr.writePin(GATE_NOTE6, HIGH);
+          voiceOn[5] = true;
+          break;
 
-      case 7:
-        voices[6].note = note;
-        voices[6].velocity = velocity;
-        voices[6].timeOn = millis();
-        updateVoice7();
-        sr.writePin(GATE_NOTE7, HIGH);
-        voiceOn[6] = true;
-        break;
+        case 7:
+          voices[6].note = note;
+          voices[6].velocity = velocity;
+          voices[6].timeOn = millis();
+          updateVoice7();
+          sr.writePin(GATE_NOTE7, HIGH);
+          voiceOn[6] = true;
+          break;
 
-      case 8:
-        voices[7].note = note;
-        voices[7].velocity = velocity;
-        voices[7].timeOn = millis();
-        updateVoice8();
-        sr.writePin(GATE_NOTE8, HIGH);
-        voiceOn[7] = true;
-        break;
+        case 8:
+          voices[7].note = note;
+          voices[7].velocity = velocity;
+          voices[7].timeOn = millis();
+          updateVoice8();
+          sr.writePin(GATE_NOTE8, HIGH);
+          voiceOn[7] = true;
+          break;
+      }
+    } else if (keyboardMode == 4 || keyboardMode == 5 || keyboardMode == 6) {
+      noteMsg = note;
+
+      if (velocity == 0) {
+        notes[noteMsg] = false;
+      } else {
+        notes[noteMsg] = true;
+      }
+
+      unsigned int velmV = map(velocity, 0, 127, 0, 8191);
+      analogWrite(VELOCITY1, velmV);
+      switch (keyboardMode) {
+        case 4:
+          commandTopNote();
+          break;
+        case 5:
+          commandBottomNote();
+          break;
+        case 6:
+          if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
+            orderIndx = (orderIndx + 1) % 40;
+            noteOrder[orderIndx] = noteMsg;
+          }
+          commandLastNote();
+          break;
+      }
+    } else if (keyboardMode == 1 || keyboardMode == 2 || keyboardMode == 3) {
+      noteMsg = note;
+
+      if (velocity == 0) {
+        notes[noteMsg] = false;
+      } else {
+        notes[noteMsg] = true;
+      }
+
+      unsigned int velmV = map(velocity, 0, 127, 0, 8191);
+      switch (polycount) {
+        case 1:
+          analogWrite(VELOCITY1, velmV);
+          break;
+
+        case 2:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          break;
+
+        case 3:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          break;
+
+        case 4:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          break;
+
+        case 5:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          break;
+
+        case 6:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          break;
+
+        case 7:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          analogWrite(VELOCITY7, velmV);
+          break;
+
+        case 8:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          analogWrite(VELOCITY7, velmV);
+          analogWrite(VELOCITY8, velmV);
+          break;
+      }
+      switch (keyboardMode) {
+        case 1:
+          commandTopNoteUni();
+          break;
+        case 2:
+          commandBottomNoteUni();
+          break;
+        case 3:
+          if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
+            orderIndx = (orderIndx + 1) % 40;
+            noteOrder[orderIndx] = noteMsg;
+          }
+          commandLastNoteUni();
+          break;
+      }
     }
-  } else if (keyboardMode == 4 || keyboardMode == 5 || keyboardMode == 6) {
-    noteMsg = note;
-
-    if (velocity == 0) {
-      notes[noteMsg] = false;
-    } else {
-      notes[noteMsg] = true;
-    }
-
-    unsigned int velmV = map(velocity, 0, 127, 0, 8191);
-    analogWrite(VELOCITY1, velmV);
-    switch (keyboardMode) {
-      case 4:
-        commandTopNote();
-        break;
-      case 5:
-        commandBottomNote();
-        break;
-      case 6:
-        if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
-          orderIndx = (orderIndx + 1) % 40;
-          noteOrder[orderIndx] = noteMsg;
-        }
-        commandLastNote();
-        break;
-    }
-  } else if (keyboardMode == 1 || keyboardMode == 2 || keyboardMode == 3) {
-    noteMsg = note;
-
-    if (velocity == 0) {
-      notes[noteMsg] = false;
-    } else {
-      notes[noteMsg] = true;
-    }
-
-    unsigned int velmV = map(velocity, 0, 127, 0, 8191);
-    analogWrite(VELOCITY1, velmV);
-    analogWrite(VELOCITY2, velmV);
-    analogWrite(VELOCITY3, velmV);
-    analogWrite(VELOCITY4, velmV);
-    analogWrite(VELOCITY5, velmV);
-    analogWrite(VELOCITY6, velmV);
-    analogWrite(VELOCITY7, velmV);
-    analogWrite(VELOCITY8, velmV);
-    switch (keyboardMode) {
-      case 1:
-        commandTopNoteUni();
-        break;
-      case 2:
-        commandBottomNoteUni();
-        break;
-      case 3:
-        if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
-          orderIndx = (orderIndx + 1) % 40;
-          noteOrder[orderIndx] = noteMsg;
-        }
-        commandLastNoteUni();
-        break;
-    }
+  }
+  if (channel == gateChannel) {
   }
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
-  if (keyboardMode == 0) {
-    switch (getVoiceNo(note)) {
-      case 1:
-        sr.writePin(GATE_NOTE1, LOW);
-        voices[0].note = -1;
-        voiceOn[0] = false;
-        break;
-      case 2:
-        sr.writePin(GATE_NOTE2, LOW);
-        voices[1].note = -1;
-        voiceOn[1] = false;
-        break;
-      case 3:
-        sr.writePin(GATE_NOTE3, LOW);
-        voices[2].note = -1;
-        voiceOn[2] = false;
-        break;
-      case 4:
-        sr.writePin(GATE_NOTE4, LOW);
-        voices[3].note = -1;
-        voiceOn[3] = false;
-        break;
-      case 5:
-        sr.writePin(GATE_NOTE5, LOW);
-        voices[4].note = -1;
-        voiceOn[4] = false;
-        break;
-      case 6:
-        sr.writePin(GATE_NOTE6, LOW);
-        voices[5].note = -1;
-        voiceOn[5] = false;
-        break;
-      case 7:
-        sr.writePin(GATE_NOTE7, LOW);
-        voices[6].note = -1;
-        voiceOn[6] = false;
-        break;
-      case 8:
-        sr.writePin(GATE_NOTE8, LOW);
-        voices[7].note = -1;
-        voiceOn[7] = false;
-        break;
-    }
-  } else if (keyboardMode == 4 || keyboardMode == 5 || keyboardMode == 6) {
+  if (channel == midiChannel) {
+    if (keyboardMode == 0) {
+      switch (getVoiceNo(note)) {
+        case 1:
+          sr.writePin(GATE_NOTE1, LOW);
+          voices[0].note = -1;
+          voiceOn[0] = false;
+          break;
+        case 2:
+          sr.writePin(GATE_NOTE2, LOW);
+          voices[1].note = -1;
+          voiceOn[1] = false;
+          break;
+        case 3:
+          sr.writePin(GATE_NOTE3, LOW);
+          voices[2].note = -1;
+          voiceOn[2] = false;
+          break;
+        case 4:
+          sr.writePin(GATE_NOTE4, LOW);
+          voices[3].note = -1;
+          voiceOn[3] = false;
+          break;
+        case 5:
+          sr.writePin(GATE_NOTE5, LOW);
+          voices[4].note = -1;
+          voiceOn[4] = false;
+          break;
+        case 6:
+          sr.writePin(GATE_NOTE6, LOW);
+          voices[5].note = -1;
+          voiceOn[5] = false;
+          break;
+        case 7:
+          sr.writePin(GATE_NOTE7, LOW);
+          voices[6].note = -1;
+          voiceOn[6] = false;
+          break;
+        case 8:
+          sr.writePin(GATE_NOTE8, LOW);
+          voices[7].note = -1;
+          voiceOn[7] = false;
+          break;
+      }
+    } else if (keyboardMode == 4 || keyboardMode == 5 || keyboardMode == 6) {
 
-    noteMsg = note;
+      noteMsg = note;
 
-    if (velocity == 0 || velocity == 64) {
-      notes[noteMsg] = false;
-    } else {
-      notes[noteMsg] = true;
-    }
+      if (velocity == 0 || velocity == 64) {
+        notes[noteMsg] = false;
+      } else {
+        notes[noteMsg] = true;
+      }
 
-    // Pins NP_SEL1 and NP_SEL2 indictate note priority
+      // Pins NP_SEL1 and NP_SEL2 indictate note priority
 
-    unsigned int velmV = map(velocity, 0, 127, 0, 8191);
-    analogWrite(VELOCITY1, velmV);
-    switch (keyboardMode) {
-      case 4:
-        commandTopNote();
-        break;
-      case 5:
-        commandBottomNote();
-        break;
-      case 6:
-        if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
-          orderIndx = (orderIndx + 1) % 40;
-          noteOrder[orderIndx] = noteMsg;
-        }
-        commandLastNote();
-        break;
-    }
-  } else if (keyboardMode == 1 || keyboardMode == 2 || keyboardMode == 3) {
-    noteMsg = note;
+      unsigned int velmV = map(velocity, 0, 127, 0, 8191);
+      analogWrite(VELOCITY1, velmV);
+      switch (keyboardMode) {
+        case 4:
+          commandTopNote();
+          break;
+        case 5:
+          commandBottomNote();
+          break;
+        case 6:
+          if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
+            orderIndx = (orderIndx + 1) % 40;
+            noteOrder[orderIndx] = noteMsg;
+          }
+          commandLastNote();
+          break;
+      }
+    } else if (keyboardMode == 1 || keyboardMode == 2 || keyboardMode == 3) {
+      noteMsg = note;
 
-    if (velocity == 0 || velocity == 64) {
-      notes[noteMsg] = false;
-    } else {
-      notes[noteMsg] = true;
-    }
+      if (velocity == 0 || velocity == 64) {
+        notes[noteMsg] = false;
+      } else {
+        notes[noteMsg] = true;
+      }
 
-    unsigned int velmV = map(velocity, 0, 127, 0, 8191);
-    analogWrite(VELOCITY1, velmV);
-    analogWrite(VELOCITY2, velmV);
-    analogWrite(VELOCITY3, velmV);
-    analogWrite(VELOCITY4, velmV);
-    analogWrite(VELOCITY5, velmV);
-    analogWrite(VELOCITY6, velmV);
-    analogWrite(VELOCITY7, velmV);
-    analogWrite(VELOCITY8, velmV);
-    switch (keyboardMode) {
-      case 1:
-        commandTopNoteUni();
-        break;
-      case 2:
-        commandBottomNoteUni();
-        break;
-      case 3:
-        if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
-          orderIndx = (orderIndx + 1) % 40;
-          noteOrder[orderIndx] = noteMsg;
-        }
-        commandLastNoteUni();
-        break;
+      unsigned int velmV = map(velocity, 0, 127, 0, 8191);
+      switch (polycount) {
+        case 1:
+          analogWrite(VELOCITY1, velmV);
+          break;
+
+        case 2:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          break;
+
+        case 3:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          break;
+
+        case 4:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          break;
+
+        case 5:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          break;
+
+        case 6:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          break;
+
+        case 7:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          analogWrite(VELOCITY7, velmV);
+          break;
+
+        case 8:
+          analogWrite(VELOCITY1, velmV);
+          analogWrite(VELOCITY2, velmV);
+          analogWrite(VELOCITY3, velmV);
+          analogWrite(VELOCITY4, velmV);
+          analogWrite(VELOCITY5, velmV);
+          analogWrite(VELOCITY6, velmV);
+          analogWrite(VELOCITY7, velmV);
+          analogWrite(VELOCITY8, velmV);
+          break;
+      }
+      switch (keyboardMode) {
+        case 1:
+          commandTopNoteUni();
+          break;
+        case 2:
+          commandBottomNoteUni();
+          break;
+        case 3:
+          if (notes[noteMsg]) {  // If note is on and using last note priority, add to ordered list
+            orderIndx = (orderIndx + 1) % 40;
+            noteOrder[orderIndx] = noteMsg;
+          }
+          commandLastNoteUni();
+          break;
+      }
     }
   }
 }
@@ -1211,6 +1444,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 1", "Poly Mode");
           break;
         }
+        if (gate1 < 36) gate1 = 36;
         if (paramEdit) {
           gate1++;
           if (gate1 > GATE_PARAMS) {
@@ -1225,6 +1459,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 2", "Poly Mode");
           break;
         }
+        if (gate2 < 36) gate2 = 36;
         if (paramEdit) {
           gate2++;
           if (gate2 > GATE_PARAMS) {
@@ -1239,6 +1474,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 3", "Poly Mode");
           break;
         }
+        if (gate3 < 36) gate3 = 36;
         if (paramEdit) {
           gate3++;
           if (gate3 > GATE_PARAMS) {
@@ -1253,6 +1489,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 4", "Poly Mode");
           break;
         }
+        if (gate4 < 36) gate4 = 36;
         if (paramEdit) {
           gate4++;
           if (gate4 > GATE_PARAMS) {
@@ -1267,6 +1504,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 5", "Poly Mode");
           break;
         }
+        if (gate5 < 36) gate5 = 36;
         if (paramEdit) {
           gate5++;
           if (gate5 > GATE_PARAMS) {
@@ -1281,6 +1519,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 6", "Poly Mode");
           break;
         }
+        if (gate6 < 36) gate6 = 36;
         if (paramEdit) {
           gate6++;
           if (gate6 > GATE_PARAMS) {
@@ -1295,6 +1534,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 7", "Poly Mode");
           break;
         }
+        if (gate7 < 36) gate7 = 36;
         if (paramEdit) {
           gate7++;
           if (gate7 > GATE_PARAMS) {
@@ -1309,6 +1549,7 @@ void checkDrumEncoder() {
           showCurrentParameterPage("Gate 8", "Poly Mode");
           break;
         }
+        if (gate8 < 36) gate8 = 36;
         if (paramEdit) {
           gate8++;
           if (gate8 > GATE_PARAMS) {
@@ -1929,9 +2170,9 @@ void loop() {
   checkeepromChanges();
   checkEncoder();
   myusb.Task();
-  midi1.read(midiChannel);    //USB HOST MIDI Class Compliant
-  MIDI.read(midiChannel);     //MIDI 5 Pin DIN
-  usbMIDI.read(midiChannel);  //USB Client MIDI
+  midi1.read(0);    //USB HOST MIDI Class Compliant
+  MIDI.read(0);     //MIDI 5 Pin DIN
+  usbMIDI.read(0);  //USB Client MIDI
   sr.update();
 }
 
