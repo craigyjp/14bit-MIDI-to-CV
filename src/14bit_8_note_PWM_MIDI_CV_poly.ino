@@ -20,8 +20,6 @@
 #include <Wire.h>
 #include <SD.h>
 #include <SerialFlash.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <MIDI.h>
 #include "MidiCC.h"
 #include "Constants.h"
@@ -46,13 +44,12 @@
 #define PARAMETER 0      //The main page for displaying the current patch and control (parameter) changes
 #define RECALL 1         //Patches list
 #define SAVE 2           //Save patch page
-#define REINITIALISE 3   // Reinitialise message
-#define PATCH 4          // Show current patch bypassing PARAMETER
-#define PATCHNAMING 5    // Patch naming page
-#define DELETE 6         //Delete patch page
-#define DELETEMSG 7      //Delete patch message page
-#define SETTINGS 8       //Settings page
-#define SETTINGSVALUE 9  //Settings page
+#define PATCH 3          // Show current patch bypassing PARAMETER
+#define PATCHNAMING 4    // Patch naming page
+#define DELETE 5         //Delete patch page
+#define DELETEMSG 6      //Delete patch message page
+#define SETTINGS 7       //Settings page
+#define SETTINGSVALUE 8  //Settings page
 
 unsigned int state = PARAMETER;
 
@@ -110,8 +107,9 @@ Rox74HC595<MUX_TOTAL> sr;
 void setup() {
 
   sr.begin(PIN_DATA, PIN_LATCH, PIN_CLK, PIN_PWM);
-
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // OLED I2C Address, may need to change for different device,
+  Wire.setClock(200000L);  // Uncomment to slow down I2C speed
+
   setupDisplay();
   setUpSettings();
   setupHardware();
@@ -156,11 +154,6 @@ void setup() {
   usbMIDI.setHandlePitchChange(myPitchBend);
   usbMIDI.setHandleAfterTouchChannel(myAfterTouch);
   Serial.println("USB Client MIDI Listening");
-
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // OLED I2C Address, may need to change for different device,
-  // Check with I2C_Scanner
-
-  // Wire.setClock(100000L);  // Uncomment to slow down I2C speed
 
   // Read Settings from EEPROM
   for (int i = 0; i < 8; i++) {
@@ -292,6 +285,38 @@ void updatechannel15() {
 
 void updatechannel16() {
   showCurrentParameterPage("Channel 16", channel16);
+}
+
+void updategate1() {
+  showCurrentParameterPage("Gate 1", "Note " + String(gate1));
+}
+
+void updategate2() {
+  showCurrentParameterPage("Gate 2", "Note " + String(gate2));
+}
+
+void updategate3() {
+  showCurrentParameterPage("Gate 3", "Note " + String(gate3));
+}
+
+void updategate4() {
+  showCurrentParameterPage("Gate 4", "Note " + String(gate4));
+}
+
+void updategate5() {
+  showCurrentParameterPage("Gate 5", "Note " + String(gate5));
+}
+
+void updategate6() {
+  showCurrentParameterPage("Gate 6", "Note " + String(gate6));
+}
+
+void updategate7() {
+  showCurrentParameterPage("Gate 7", "Note " + String(gate7));
+}
+
+void updategate8() {
+  showCurrentParameterPage("Gate 8", "Note " + String(gate8));
 }
 
 void commandTopNote() {
@@ -868,6 +893,9 @@ void setCurrentPatchData(String data[]) {
   gate5 = data[23].toInt();
   gate6 = data[24].toInt();
   gate7 = data[25].toInt();
+  keyboardMode = data[26].toInt();
+  transpose = data[27].toInt();
+  realoctave = data[28].toInt();
 
   //MUX2
 
@@ -884,7 +912,8 @@ String getCurrentPatchData() {
          + "," + String(channel9) + "," + String(channel10) + "," + String(channel11) + "," + String(channel12)
          + "," + String(channel13) + "," + String(channel14) + "," + String(channel15) + "," + String(channel16)
          + "," + String(gate1) + "," + String(gate2) + "," + String(gate3) + "," + String(gate4)
-         + "," + String(gate5) + "," + String(gate6) + "," + String(gate7) + "," + String(gate8);
+         + "," + String(gate5) + "," + String(gate6) + "," + String(gate7) + "," + String(gate8)
+         + "," + String(keyboardMode) + "," + String(transpose) + "," + String(realoctave);
 }
 
 void updatePatchname() {
@@ -953,6 +982,10 @@ void checkDrumEncoder() {
         break;
 
       case 2:
+        if (polycount > 0) {
+          showCurrentParameterPage("Channel 1", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel1++;
           if (channel1 > CHANNEL_PARAMS) {
@@ -963,6 +996,10 @@ void checkDrumEncoder() {
         break;
 
       case 3:
+        if (polycount > 1) {
+          showCurrentParameterPage("Channel 2", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel2++;
           if (channel2 > CHANNEL_PARAMS) {
@@ -973,6 +1010,10 @@ void checkDrumEncoder() {
         break;
 
       case 4:
+        if (polycount > 2) {
+          showCurrentParameterPage("Channel 3", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel3++;
           if (channel3 > CHANNEL_PARAMS) {
@@ -983,6 +1024,10 @@ void checkDrumEncoder() {
         break;
 
       case 5:
+        if (polycount > 3) {
+          showCurrentParameterPage("Channel 4", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel4++;
           if (channel4 > CHANNEL_PARAMS) {
@@ -993,6 +1038,10 @@ void checkDrumEncoder() {
         break;
 
       case 6:
+        if (polycount > 4) {
+          showCurrentParameterPage("Channel 5", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel5++;
           if (channel5 > CHANNEL_PARAMS) {
@@ -1003,6 +1052,10 @@ void checkDrumEncoder() {
         break;
 
       case 7:
+        if (polycount > 5) {
+          showCurrentParameterPage("Channel 6", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel6++;
           if (channel6 > CHANNEL_PARAMS) {
@@ -1013,6 +1066,10 @@ void checkDrumEncoder() {
         break;
 
       case 8:
+        if (polycount > 6) {
+          showCurrentParameterPage("Channel 7", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel7++;
           if (channel7 > CHANNEL_PARAMS) {
@@ -1023,6 +1080,10 @@ void checkDrumEncoder() {
         break;
 
       case 9:
+        if (polycount > 7) {
+          showCurrentParameterPage("Channel 8", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel8++;
           if (channel8 > CHANNEL_PARAMS) {
@@ -1033,6 +1094,10 @@ void checkDrumEncoder() {
         break;
 
       case 10:
+        if (polycount > 0) {
+          showCurrentParameterPage("Channel 9", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel9++;
           if (channel9 > CHANNEL_PARAMS) {
@@ -1043,6 +1108,10 @@ void checkDrumEncoder() {
         break;
 
       case 11:
+        if (polycount > 1) {
+          showCurrentParameterPage("Channel 10", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel10++;
           if (channel10 > CHANNEL_PARAMS) {
@@ -1053,6 +1122,10 @@ void checkDrumEncoder() {
         break;
 
       case 12:
+        if (polycount > 2) {
+          showCurrentParameterPage("Channel 11", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel11++;
           if (channel11 > CHANNEL_PARAMS) {
@@ -1064,6 +1137,10 @@ void checkDrumEncoder() {
 
 
       case 13:
+        if (polycount > 3) {
+          showCurrentParameterPage("Channel 12", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel12++;
           if (channel12 > CHANNEL_PARAMS) {
@@ -1074,6 +1151,10 @@ void checkDrumEncoder() {
         break;
 
       case 14:
+        if (polycount > 4) {
+          showCurrentParameterPage("Channel 13", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel13++;
           if (channel13 > CHANNEL_PARAMS) {
@@ -1084,6 +1165,10 @@ void checkDrumEncoder() {
         break;
 
       case 15:
+        if (polycount > 5) {
+          showCurrentParameterPage("Channel 14", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel14++;
           if (channel14 > CHANNEL_PARAMS) {
@@ -1094,6 +1179,10 @@ void checkDrumEncoder() {
         break;
 
       case 16:
+        if (polycount > 6) {
+          showCurrentParameterPage("Channel 15", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel15++;
           if (channel15 > CHANNEL_PARAMS) {
@@ -1104,6 +1193,10 @@ void checkDrumEncoder() {
         break;
 
       case 17:
+        if (polycount > 7) {
+          showCurrentParameterPage("Channel 16", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel16++;
           if (channel16 > CHANNEL_PARAMS) {
@@ -1111,6 +1204,118 @@ void checkDrumEncoder() {
           }
         }
         updatechannel16();
+        break;
+
+      case 18:
+        if (polycount > 0) {
+          showCurrentParameterPage("Gate 1", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate1++;
+          if (gate1 > GATE_PARAMS) {
+            gate1 = 36;
+          }
+        }
+        updategate1();
+        break;
+
+      case 19:
+        if (polycount > 1) {
+          showCurrentParameterPage("Gate 2", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate2++;
+          if (gate2 > GATE_PARAMS) {
+            gate2 = 36;
+          }
+        }
+        updategate2();
+        break;
+
+      case 20:
+        if (polycount > 2) {
+          showCurrentParameterPage("Gate 3", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate3++;
+          if (gate3 > GATE_PARAMS) {
+            gate3 = 36;
+          }
+        }
+        updategate3();
+        break;
+
+      case 21:
+        if (polycount > 3) {
+          showCurrentParameterPage("Gate 4", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate4++;
+          if (gate4 > GATE_PARAMS) {
+            gate4 = 36;
+          }
+        }
+        updategate4();
+        break;
+
+      case 22:
+        if (polycount > 4) {
+          showCurrentParameterPage("Gate 5", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate5++;
+          if (gate5 > GATE_PARAMS) {
+            gate5 = 36;
+          }
+        }
+        updategate5();
+        break;
+
+      case 23:
+        if (polycount > 5) {
+          showCurrentParameterPage("Gate 6", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate6++;
+          if (gate6 > GATE_PARAMS) {
+            gate6 = 36;
+          }
+        }
+        updategate6();
+        break;
+
+      case 24:
+        if (polycount > 6) {
+          showCurrentParameterPage("Gate 7", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate7++;
+          if (gate7 > GATE_PARAMS) {
+            gate7 = 36;
+          }
+        }
+        updategate7();
+        break;
+
+      case 25:
+        if (polycount > 7) {
+          showCurrentParameterPage("Gate 8", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate8++;
+          if (gate8 > GATE_PARAMS) {
+            gate8 = 36;
+          }
+        }
+        updategate8();
         break;
     }
 
@@ -1136,6 +1341,10 @@ void checkDrumEncoder() {
         break;
 
       case 2:
+        if (polycount > 0) {
+          showCurrentParameterPage("Channel 1", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel1--;
           if (channel1 < 0) {
@@ -1146,6 +1355,10 @@ void checkDrumEncoder() {
         break;
 
       case 3:
+        if (polycount > 1) {
+          showCurrentParameterPage("Channel 2", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel2--;
           if (channel2 < 0) {
@@ -1156,6 +1369,10 @@ void checkDrumEncoder() {
         break;
 
       case 4:
+        if (polycount > 2) {
+          showCurrentParameterPage("Channel 3", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel3--;
           if (channel3 < 0) {
@@ -1166,6 +1383,10 @@ void checkDrumEncoder() {
         break;
 
       case 5:
+        if (polycount > 3) {
+          showCurrentParameterPage("Channel 4", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel4--;
           if (channel4 < 0) {
@@ -1176,6 +1397,10 @@ void checkDrumEncoder() {
         break;
 
       case 6:
+        if (polycount > 4) {
+          showCurrentParameterPage("Channel 5", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel5--;
           if (channel5 < 0) {
@@ -1186,6 +1411,10 @@ void checkDrumEncoder() {
         break;
 
       case 7:
+        if (polycount > 5) {
+          showCurrentParameterPage("Channel 6", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel6--;
           if (channel6 < 0) {
@@ -1196,6 +1425,10 @@ void checkDrumEncoder() {
         break;
 
       case 8:
+        if (polycount > 6) {
+          showCurrentParameterPage("Channel 7", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel7--;
           if (channel7 < 0) {
@@ -1206,6 +1439,10 @@ void checkDrumEncoder() {
         break;
 
       case 9:
+        if (polycount > 7) {
+          showCurrentParameterPage("Channel 8", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel8--;
           if (channel8 < 0) {
@@ -1216,6 +1453,10 @@ void checkDrumEncoder() {
         break;
 
       case 10:
+        if (polycount > 0) {
+          showCurrentParameterPage("Channel 9", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel9--;
           if (channel9 < 0) {
@@ -1226,6 +1467,10 @@ void checkDrumEncoder() {
         break;
 
       case 11:
+        if (polycount > 1) {
+          showCurrentParameterPage("Channel 10", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel10--;
           if (channel10 < 0) {
@@ -1236,6 +1481,10 @@ void checkDrumEncoder() {
         break;
 
       case 12:
+        if (polycount > 2) {
+          showCurrentParameterPage("Channel 11", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel11--;
           if (channel11 < 0) {
@@ -1246,6 +1495,10 @@ void checkDrumEncoder() {
         break;
 
       case 13:
+        if (polycount > 3) {
+          showCurrentParameterPage("Channel 12", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel12--;
           if (channel12 < 0) {
@@ -1256,6 +1509,10 @@ void checkDrumEncoder() {
         break;
 
       case 14:
+        if (polycount > 4) {
+          showCurrentParameterPage("Channel 13", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel13--;
           if (channel13 < 0) {
@@ -1266,6 +1523,10 @@ void checkDrumEncoder() {
         break;
 
       case 15:
+        if (polycount > 5) {
+          showCurrentParameterPage("Channel 14", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel14--;
           if (channel14 < 0) {
@@ -1276,6 +1537,10 @@ void checkDrumEncoder() {
         break;
 
       case 16:
+        if (polycount > 6) {
+          showCurrentParameterPage("Channel 15", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel15--;
           if (channel15 < 0) {
@@ -1286,13 +1551,129 @@ void checkDrumEncoder() {
         break;
 
       case 17:
+        if (polycount > 7) {
+          showCurrentParameterPage("Channel 16", "Poly Mode");
+          break;
+        }
         if (paramEdit) {
           channel16--;
-          if (channel16 < 0) {
+          if (channel16 < 36) {
             channel16 = CHANNEL_PARAMS;
           }
         }
         updatechannel16();
+        break;
+
+      case 18:
+        if (polycount > 0) {
+          showCurrentParameterPage("Gate 1", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate1--;
+          if (gate1 < 36) {
+            gate1 = GATE_PARAMS;
+          }
+        }
+        updategate1();
+        break;
+
+      case 19:
+        if (polycount > 1) {
+          showCurrentParameterPage("Gate 2", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate2--;
+          if (gate2 < 36) {
+            gate2 = GATE_PARAMS;
+          }
+        }
+        updategate2();
+        break;
+
+      case 20:
+        if (polycount > 2) {
+          showCurrentParameterPage("Gate 3", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate3--;
+          if (gate3 < 36) {
+            gate3 = GATE_PARAMS;
+          }
+        }
+        updategate3();
+        break;
+
+      case 21:
+        if (polycount > 3) {
+          showCurrentParameterPage("Gate 4", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate4--;
+          if (gate4 < 36) {
+            gate4 = GATE_PARAMS;
+          }
+        }
+        updategate4();
+        break;
+
+      case 22:
+        if (polycount > 4) {
+          showCurrentParameterPage("Gate 5", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate5--;
+          if (gate5 < 36) {
+            gate5 = GATE_PARAMS;
+          }
+        }
+        updategate5();
+        break;
+
+      case 23:
+        if (polycount > 5) {
+          showCurrentParameterPage("Gate 6", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate6--;
+          if (gate6 < 36) {
+            gate6 = GATE_PARAMS;
+          }
+        }
+        updategate6();
+        break;
+
+      case 24:
+        if (polycount > 6) {
+          showCurrentParameterPage("Gate 7", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate7--;
+          if (gate7 < 36) {
+            gate7 = GATE_PARAMS;
+          }
+        }
+        updategate7();
+        break;
+
+      case 25:
+        if (polycount > 7) {
+          showCurrentParameterPage("Gate 8", "Poly Mode");
+          break;
+        }
+        if (paramEdit) {
+          gate8--;
+          if (gate8 < 36) {
+            gate8 = GATE_PARAMS;
+          }
+        }
+        updategate8();
         break;
     }
     param_encPrevious = param_encRead;
@@ -1304,6 +1685,8 @@ void checkSwitches() {
   paramButton.update();
   if (paramButton.numClicks() == 1) {
     paramEdit = !paramEdit;
+  } else if (paramButton.numClicks() == 2) {
+    paramChange = !paramChange;
   }
 
   saveButton.update();

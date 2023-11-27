@@ -10,7 +10,7 @@ boolean encCW = true;//This is to set the encoder to increment when turned CW - 
 boolean param_encCW = true;
 int param_number = 0;
 boolean paramEdit = false;
-boolean forwards = false;
+boolean paramChange = false;
 
 //Values below are just for initialising and will be changed when synth is initialised to current panel controls & EEPROM settings
 byte midiChannel = 1;//(EEPROM)
@@ -33,14 +33,14 @@ int channel14 = 0;
 int channel15 = 0;
 int channel16 = 0;
 
-int gate1 = 0;
-int gate2 = 0;
-int gate3 = 0;
-int gate4 = 0;
-int gate5 = 0;
-int gate6 = 0;
-int gate7 = 0;
-int gate8 = 0;
+int gate1 = 36;
+int gate2 = 36;
+int gate3 = 36;
+int gate4 = 36;
+int gate5 = 36;
+int gate6 = 35;
+int gate7 = 36;
+int gate8 = 36;
 
 
 int transpose;

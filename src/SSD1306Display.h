@@ -1,6 +1,8 @@
 #include "TeensyThreads.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-#define DISPLAYTIMEOUT 2000
+#define DISPLAYTIMEOUT 3000
 
 #define OLED_RESET 17      // Reset pin # (or -1 if sharing Arduino reset pin
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
@@ -23,8 +25,6 @@ const char * currentSettingsValue = "";
 int currentSettingsPart = SETTINGS;
 int paramType = PARAMETER;
 
-boolean MIDIClkSignal = false;
-
 unsigned long timer = 0;
 
 void startTimer()
@@ -45,10 +45,10 @@ void renderBootUpPage() {
   display.setCursor(10, 24);
   display.setTextSize(1);
   display.setTextColor(WHITE, BLACK);
-  display.print("MFOS");
+  display.print("MIDI");
   display.setCursor(48, 24);
   display.setTextColor(BLACK, WHITE);
-  display.print("16 STG PHASER");
+  display.print("MIDI TO CV");
   display.setTextColor(WHITE, BLACK);
   display.drawRect(5, 45, 72, 15, WHITE);
   display.fillRect(77, 45, 54, 15, WHITE);
@@ -143,17 +143,6 @@ void renderSavePage() {
   display.setCursor(30, 58);
   display.setTextColor(BLACK);
   display.println(patches.last().patchName);
-}
-
-void renderReinitialisePage() {
-  display.clearDisplay();
-  display.setFont(&FreeSans9pt7b);
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(5, 20);
-  display.println("Initialise to");
-  display.setCursor(5, 58);
-  display.println("panel setting");
 }
 
 void renderPatchNamingPage() {
