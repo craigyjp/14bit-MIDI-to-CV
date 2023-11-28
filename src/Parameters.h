@@ -1,7 +1,31 @@
 // Parameters
 
-// static unsigned long clock_timer = 0, clock_timeout = 0;
-// static unsigned int clock_count = 0;
+uint8_t GATE_PINS[8] = {
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+};
+
+uint8_t GATE_NOTES[8] = {
+};
+
+Gate GATE1(0);
+Gate GATE2(1);
+Gate GATE3(2);
+Gate GATE4(3);
+Gate GATE5(4);
+Gate GATE6(5);
+Gate GATE7(6);
+Gate GATE8(7);
+
+Gate *GATES[] = {&GATE1, &GATE2, &GATE3, &GATE4, &GATE5, &GATE6, &GATE7, &GATE8};
+int LED_IS_ON = 0;
+
 
 unsigned long timeout = 0;
 
@@ -24,6 +48,7 @@ unsigned int mV8;
 //Values below are just for initialising and will be changed when synth is initialised to current panel controls & EEPROM settings
 byte midiChannel = 1;//(EEPROM)
 byte gateChannel = 2;//(EEPROM)
+int freeGates = 0;
 
 int polycount = 0;
 int channel1 = 0;

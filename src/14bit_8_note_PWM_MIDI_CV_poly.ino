@@ -23,6 +23,7 @@
 #include <MIDI.h>
 #include "MidiCC.h"
 #include "Constants.h"
+#include "Gate.h"
 #include "Parameters.h"
 #include "PatchMgr.h"
 #include <USBHost_t36.h>
@@ -30,6 +31,7 @@
 #include "EepromMgr.h"
 #include "Settings.h"
 #include <RoxMux.h>
+
 
 
 // OLED I2C is used on pins 18 and 19 for Teensy 3.x
@@ -221,6 +223,15 @@ void myAfterTouch(byte channel, byte value) {
 
 void updatepolyCount() {
   showCurrentParameterPage("Poly Count", String(polycount) + " Notes");
+  freeGates = (8 - polycount);
+  GATE_NOTES[0] = gate1;
+  GATE_NOTES[1] = gate2;
+  GATE_NOTES[2] = gate3;
+  GATE_NOTES[3] = gate4;
+  GATE_NOTES[4] = gate5;
+  GATE_NOTES[5] = gate6;
+  GATE_NOTES[6] = gate7;
+  GATE_NOTES[7] = gate8;
 }
 
 void updatechannel1() {
@@ -448,7 +459,7 @@ void updateGates(int gatestate) {
       sr.writePin(GATE_NOTE4, gatestate);
       break;
 
-    case 5: 
+    case 5:
       sr.writePin(GATE_NOTE1, gatestate);
       sr.writePin(GATE_NOTE2, gatestate);
       sr.writePin(GATE_NOTE3, gatestate);
@@ -790,7 +801,20 @@ void myNoteOn(byte channel, byte note, byte velocity) {
     }
   }
   if (channel == gateChannel) {
+    for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
+      if (GATE_NOTES[pin_index] == note) {
+        ledOn(pin_index);
+      }
+    }
   }
+}
+
+void ledOn(int pin_index) {
+  sr.writePin(pin_index, HIGH);
+}
+
+void ledOff(int pin_index) {
+  sr.writePin(pin_index, LOW);
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
@@ -952,6 +976,13 @@ void myNoteOff(byte channel, byte note, byte velocity) {
           }
           commandLastNoteUni();
           break;
+      }
+    }
+  }
+  if (channel == gateChannel) {
+    for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
+      if (GATE_NOTES[pin_index] == note) {
+        ledOff(pin_index);
       }
     }
   }
@@ -1119,13 +1150,13 @@ void setCurrentPatchData(String data[]) {
   channel15 = data[16].toInt();
   channel16 = data[17].toInt();
   gate1 = data[18].toInt();
-  gate1 = data[19].toInt();
-  gate2 = data[20].toInt();
-  gate3 = data[21].toInt();
-  gate4 = data[22].toInt();
-  gate5 = data[23].toInt();
-  gate6 = data[24].toInt();
-  gate7 = data[25].toInt();
+  gate2 = data[19].toInt();
+  gate3 = data[20].toInt();
+  gate4 = data[21].toInt();
+  gate5 = data[22].toInt();
+  gate6 = data[23].toInt();
+  gate7 = data[24].toInt();
+  gate8 = data[25].toInt();
   keyboardMode = data[26].toInt();
   transpose = data[27].toInt();
   realoctave = data[28].toInt();
@@ -1133,6 +1164,7 @@ void setCurrentPatchData(String data[]) {
   //MUX2
 
   //Switches
+  updatepolyCount();
 
 
   //Patchname
@@ -2174,6 +2206,7 @@ void loop() {
   MIDI.read(0);     //MIDI 5 Pin DIN
   usbMIDI.read(0);  //USB Client MIDI
   sr.update();
+  //turnoffGates();
 }
 
 // void updateMenu() {  // Called whenever button is pushed
