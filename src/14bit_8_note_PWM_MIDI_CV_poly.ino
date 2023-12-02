@@ -17,7 +17,7 @@
 */
 
 #include <SPI.h>
-#include <Wire.h>
+//#include <Wire.h>
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
@@ -58,8 +58,6 @@ unsigned int state = PARAMETER;
 #include "SSD1306Display.h"
 
 boolean cardStatus = false;
-
-float sfAdj[8];
 
 struct VoiceAndNote {
   int note;
@@ -108,8 +106,11 @@ Rox74HC595<MUX_TOTAL> sr;
 void setup() {
 
   sr.begin(PIN_DATA, PIN_LATCH, PIN_CLK, PIN_PWM);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // OLED I2C Address, may need to change for different device,
-  Wire.setClock(200000L);                     // Uncomment to slow down I2C speed
+  
+    if(!display.begin(SSD1306_SWITCHCAPVCC)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
 
   setupDisplay();
   setUpSettings();
@@ -2206,28 +2207,8 @@ void loop() {
   MIDI.read(0);     //MIDI 5 Pin DIN
   usbMIDI.read(0);  //USB Client MIDI
   sr.update();
-  //turnoffGates();
 }
 
-// void updateMenu() {  // Called whenever button is pushed
-
-
-//       case SCALE_FACTOR:
-//         setCh = mod(encoderPos, 7);
-//         switch (setCh) {
-//           case 0:
-//           case 1:
-//           case 2:
-//           case 3:
-//           case 4:
-//           case 5:
-//             menu = SCALE_FACTOR_SET_CH;
-//             break;
-//           case 6:
-//             menu = SETTINGS;
-//             break;
-//         }
-//         break;
 
 
 //     case SCALE_FACTOR_SET_CH:

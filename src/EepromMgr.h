@@ -71,6 +71,17 @@ void storeTranspose(byte eepromtranspose)
   EEPROM.update(ADDR_TRANSPOSE, eepromtranspose);
 }
 
+int getSFAdjust(byte SFAdjustNumber) {
+  sfAdj[SFAdjustNumber] = EEPROM.read(ADDR_SF_ADJUST + SFAdjustNumber);
+  if (sfAdj[SFAdjustNumber] < 0 || sfAdj[SFAdjustNumber] > 25) sfAdj[SFAdjustNumber] = 13;
+  return sfAdj[SFAdjustNumber];
+}
+
+void storeSFAdjust(byte SFAdjustNumber, byte SFAdjustValue)
+{
+  EEPROM.update(ADDR_SF_ADJUST + SFAdjustNumber, sfAdj[SFAdjustNumber]);
+}
+
 int getOctave() {
   byte eepromOctave = EEPROM.read(ADDR_OCTAVE);
   if (eepromOctave < 0 || eepromOctave > 4) eepromOctave = 2; //If EEPROM has no mod wheel depth stored

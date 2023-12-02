@@ -26,6 +26,7 @@ Gate GATE8(7);
 Gate *GATES[] = {&GATE1, &GATE2, &GATE3, &GATE4, &GATE5, &GATE6, &GATE7, &GATE8};
 int LED_IS_ON = 0;
 
+float sfAdj[8];
 
 unsigned long timeout = 0;
 

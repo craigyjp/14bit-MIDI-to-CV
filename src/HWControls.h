@@ -4,8 +4,8 @@
 
 // Notes
 
-#define NOTE1 2
-#define NOTE2 3
+#define NOTE1 19
+#define NOTE2 18
 #define NOTE3 4
 #define NOTE4 5
 #define NOTE5 6

@@ -3,11 +3,19 @@
 #include <Adafruit_SSD1306.h>
 
 #define DISPLAYTIMEOUT 2000
+#define OLED_MOSI   26
+#define OLED_CLK   27
+#define OLED_CS     3
+#define OLED_DC     2
+#define OLED_RESET  21
 
-#define OLED_RESET 16     // Reset pin # (or -1 if sharing Arduino reset pin
+//#define OLED_RESET 16     // Reset pin # (or -1 if sharing Arduino reset pin
 #define SCREEN_WIDTH 128  // OLED display width, in pixels
 #define SCREEN_HEIGHT 64  // OLED display height, in pixels
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
+  OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+//Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #include <Fonts/Org_01.h>
 #include <Fonts/FreeSansBold18pt7b.h>
