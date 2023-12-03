@@ -107,6 +107,25 @@ void renderCurrentParameterPage()
   }
 }
 
+void renderCurrentParamPage()
+{
+  switch (state)
+  {
+    case CCPARAMS:
+      display.clearDisplay();
+      display.setFont(&FreeSans9pt7b);
+      display.setCursor(5, 20);
+      display.setTextColor(WHITE);
+      display.setTextSize(1);
+      display.println(currentParameter);
+      display.drawFastHLine(5, 31, display.width() -10, WHITE);
+      display.setCursor(5, 58);
+      display.setTextColor(WHITE);
+      display.println(currentValue);
+      break;
+  }
+}
+
 void renderDeletePatchPage() {
   display.clearDisplay();
   display.setFont(&FreeSans9pt7b);
@@ -293,6 +312,9 @@ void displayThread()
       case SETTINGS:
       case SETTINGSVALUE:
         renderSettingsPage();
+        break;
+      case CCPARAMS:
+        renderCurrentParamPage();
         break;
     }
     display.display();

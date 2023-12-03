@@ -32,8 +32,6 @@
 #include "Settings.h"
 #include <RoxMux.h>
 
-
-
 // OLED I2C is used on pins 18 and 19 for Teensy 3.x
 
 // Voices available
@@ -52,6 +50,7 @@
 #define DELETEMSG 6      //Delete patch message page
 #define SETTINGS 7       //Settings page
 #define SETTINGSVALUE 8  //Settings page
+#define CCPARAMS 9       //Params Page
 
 unsigned int state = PARAMETER;
 
@@ -103,18 +102,26 @@ Rox74HC595<MUX_TOTAL> sr;
 #define PIN_CLK 31    // pin 11 on 74HC595 (CLK)
 #define PIN_PWM -1    // pin 13 on 74HC595
 
+RoxButton paramButton;
+
+
+
 void setup() {
 
   sr.begin(PIN_DATA, PIN_LATCH, PIN_CLK, PIN_PWM);
-  
-    if(!display.begin(SSD1306_SWITCHCAPVCC)) {
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+    for (;;)
+      ;  // Don't proceed, loop forever
   }
 
   setupDisplay();
   setUpSettings();
   setupHardware();
+
+  paramButton.begin();
+  paramButton.setDoublePressThreshold(300);
 
   cardStatus = SD.begin(BUILTIN_SDCARD);
   if (cardStatus) {
@@ -236,67 +243,451 @@ void updatepolyCount() {
 }
 
 void updatechannel1() {
-  showCurrentParameterPage("Channel 1", channel1);
+  switch (channel1) {
+    case 0:
+      showCurrentParameterPage("Channel 1", "CC Number " + String(channel1_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 1", "MIDI Chan " + String(channel1_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 1", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 1", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 1", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 1", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel2() {
-  showCurrentParameterPage("Channel 2", channel2);
+    switch (channel2_CC) {
+    case 0:
+      showCurrentParameterPage("Channel 2", "CC Number " + String(channel2_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 2", "MIDI Chan " + String(channel2_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 2", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 2", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 2", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 2", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel3() {
-  showCurrentParameterPage("Channel 3", channel3);
+    switch (channel3) {
+    case 0:
+      showCurrentParameterPage("Channel 3", "CC Number " + String(channel3_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 3", "MIDI Chan " + String(channel3_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 3", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 3", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 3", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 3", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel4() {
-  showCurrentParameterPage("Channel 4", channel4);
+    switch (channel4) {
+    case 0:
+      showCurrentParameterPage("Channel 4", "CC Number " + String(channel4_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 4", "MIDI Chan " + String(channel4_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 4", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 4", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 4", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 4", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel5() {
-  showCurrentParameterPage("Channel 5", channel5);
+    switch (channel5) {
+    case 0:
+      showCurrentParameterPage("Channel 5", "CC Number " + String(channel5_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 5", "MIDI Chan " + String(channel5_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 5", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 5", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 5", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 5", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel6() {
-  showCurrentParameterPage("Channel 6", channel6);
+    switch (channel6) {
+    case 0:
+      showCurrentParameterPage("Channel 6", "CC Number " + String(channel6_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 6", "MIDI Chan " + String(channel6_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 6", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 6", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 6", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 6", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel7() {
-  showCurrentParameterPage("Channel 7", channel7);
+    switch (channel7) {
+    case 0:
+      showCurrentParameterPage("Channel 7", "CC Number " + String(channel7_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 7", "MIDI Chan " + String(channel7_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 7", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 7", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 7", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 7", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel8() {
-  showCurrentParameterPage("Channel 8", channel8);
+    switch (channel8) {
+    case 0:
+      showCurrentParameterPage("Channel 8", "CC Number " + String(channel8_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 8", "MIDI Chan " + String(channel8_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 8", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 8", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 8", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 8", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel9() {
-  showCurrentParameterPage("Channel 9", channel9);
+    switch (channel9) {
+    case 0:
+      showCurrentParameterPage("Channel 9", "CC Number " + String(channel9_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 9", "MIDI Chan " + String(channel9_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 9", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 9", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 9", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 9", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel10() {
-  showCurrentParameterPage("Channel 10", channel10);
+    switch (channel10) {
+    case 0:
+      showCurrentParameterPage("Channel 10", "CC Number " + String(channel10_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 10", "MIDI Chan " + String(channel10_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 10", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 10", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 10", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 10", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel11() {
-  showCurrentParameterPage("Channel 11", channel11);
+    switch (channel11) {
+    case 0:
+      showCurrentParameterPage("Channel 11", "CC Number " + String(channel11_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 11", "MIDI Chan " + String(channel11_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 11", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 11", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 11", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 11", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel12() {
-  showCurrentParameterPage("Channel 12", channel12);
+    switch (channel12) {
+    case 0:
+      showCurrentParameterPage("Channel 12", "CC Number " + String(channel12_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 12", "MIDI Chan " + String(channel12_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 12", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 12", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 12", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 12", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel13() {
-  showCurrentParameterPage("Channel 13", channel13);
+    switch (channel13) {
+    case 0:
+      showCurrentParameterPage("Channel 13", "CC Number " + String(channel13_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 13", "MIDI Chan " + String(channel13_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 13", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 13", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 13", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 13", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel14() {
-  showCurrentParameterPage("Channel 14", channel14);
+    switch (channel14) {
+    case 0:
+      showCurrentParameterPage("Channel 14", "CC Number " + String(channel14_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 14", "MIDI Chan " + String(channel14_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 14", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 14", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 14", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 14", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel15() {
-  showCurrentParameterPage("Channel 15", channel15);
+    switch (channel15) {
+    case 0:
+      showCurrentParameterPage("Channel 15", "CC Number " + String(channel15_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 15", "MIDI Chan " + String(channel15_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 15", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 15", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 15", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 15", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updatechannel16() {
-  showCurrentParameterPage("Channel 16", channel16);
+    switch (channel16) {
+    case 0:
+      showCurrentParameterPage("Channel 16", "CC Number " + String(channel16_CC));
+      break;
+
+    case 1:
+      showCurrentParameterPage("Channel 16", "MIDI Chan " + String(channel16_MIDI));
+      break;
+
+    case 2:
+      showCurrentParameterPage("Channel 16", "CC 0-5V");
+      break;
+
+    case 3:
+      showCurrentParameterPage("Channel 16", "CC 0-10V");
+      break;
+
+    case 4:
+      showCurrentParameterPage("Channel 16", "NPRN 0-5V");
+      break;
+
+    case 5:
+      showCurrentParameterPage("Channel 16", "NPRN 0-10V");
+      break;
+  }
 }
 
 void updategate1() {
@@ -1150,6 +1541,7 @@ void setCurrentPatchData(String data[]) {
   channel14 = data[15].toInt();
   channel15 = data[16].toInt();
   channel16 = data[17].toInt();
+
   gate1 = data[18].toInt();
   gate2 = data[19].toInt();
   gate3 = data[20].toInt();
@@ -1158,9 +1550,44 @@ void setCurrentPatchData(String data[]) {
   gate6 = data[23].toInt();
   gate7 = data[24].toInt();
   gate8 = data[25].toInt();
+
   keyboardMode = data[26].toInt();
   transpose = data[27].toInt();
   realoctave = data[28].toInt();
+
+  channel1_CC = data[29].toInt();
+  channel2_CC = data[30].toInt();
+  channel3_CC = data[31].toInt();
+  channel4_CC = data[32].toInt();
+  channel5_CC = data[33].toInt();
+  channel6_CC = data[34].toInt();
+  channel7_CC = data[35].toInt();
+  channel8_CC = data[36].toInt();
+  channel9_CC = data[37].toInt();
+  channel10_CC = data[38].toInt();
+  channel10_CC = data[39].toInt();
+  channel12_CC = data[40].toInt();
+  channel13_CC = data[41].toInt();
+  channel14_CC = data[42].toInt();
+  channel15_CC = data[43].toInt();
+  channel16_CC = data[44].toInt();
+
+  channel1_MIDI = data[45].toInt();
+  channel2_MIDI = data[46].toInt();
+  channel3_MIDI = data[47].toInt();
+  channel4_MIDI = data[48].toInt();
+  channel5_MIDI = data[49].toInt();
+  channel6_MIDI = data[50].toInt();
+  channel7_MIDI = data[51].toInt();
+  channel8_MIDI = data[52].toInt();
+  channel9_MIDI = data[53].toInt();
+  channel10_MIDI = data[54].toInt();
+  channel10_MIDI = data[55].toInt();
+  channel12_MIDI = data[56].toInt();
+  channel13_MIDI = data[57].toInt();
+  channel14_MIDI = data[58].toInt();
+  channel15_MIDI = data[59].toInt();
+  channel16_MIDI = data[60].toInt();
 
   //MUX2
 
@@ -1174,12 +1601,20 @@ void setCurrentPatchData(String data[]) {
 
 String getCurrentPatchData() {
   return patchName + "," + String(polycount) + "," + String(channel1) + "," + String(channel2) + "," + String(channel3) + "," + String(channel4)
-         + "," + String(channel5) + "," + String(channel6) + "," + String(channel6) + "," + String(channel8)
+         + "," + String(channel5) + "," + String(channel6) + "," + String(channel7) + "," + String(channel8)
          + "," + String(channel9) + "," + String(channel10) + "," + String(channel11) + "," + String(channel12)
          + "," + String(channel13) + "," + String(channel14) + "," + String(channel15) + "," + String(channel16)
          + "," + String(gate1) + "," + String(gate2) + "," + String(gate3) + "," + String(gate4)
          + "," + String(gate5) + "," + String(gate6) + "," + String(gate7) + "," + String(gate8)
-         + "," + String(keyboardMode) + "," + String(transpose) + "," + String(realoctave);
+         + "," + String(keyboardMode) + "," + String(transpose) + "," + String(realoctave)
+         + "," + String(channel1_CC) + "," + String(channel2_CC) + "," + String(channel3_CC) + "," + String(channel4_CC)
+         + "," + String(channel5_CC) + "," + String(channel6_CC) + "," + String(channel7_CC) + "," + String(channel8_CC)
+         + "," + String(channel9_CC) + "," + String(channel10_CC) + "," + String(channel11_CC) + "," + String(channel12_CC)
+         + "," + String(channel13_CC) + "," + String(channel14_CC) + "," + String(channel15_CC) + "," + String(channel16_CC)
+         + "," + String(channel1_MIDI) + "," + String(channel2_MIDI) + "," + String(channel3_MIDI) + "," + String(channel4_MIDI)
+         + "," + String(channel5_MIDI) + "," + String(channel6_MIDI) + "," + String(channel7_MIDI) + "," + String(channel8_MIDI)
+         + "," + String(channel9_MIDI) + "," + String(channel10_MIDI) + "," + String(channel11_MIDI) + "," + String(channel12_MIDI)
+         + "," + String(channel13_MIDI) + "," + String(channel14_MIDI) + "," + String(channel15_MIDI) + "," + String(channel16_MIDI);
 }
 
 void updatePatchname() {
@@ -1229,12 +1664,14 @@ void checkDrumEncoder() {
 
   long param_encRead = param_encoder.read();
   if ((param_encCW && param_encRead > param_encPrevious + 3) || (!param_encCW && param_encRead < param_encPrevious - 3)) {
-    if (!paramEdit) {
+
+    if (!paramEdit && !paramChange) {
       param_number = param_number + 1;
       if (param_number > 25) {
         param_number = 1;
       }
     }
+
     switch (param_number) {
       case 1:
         if (paramEdit) {
@@ -1258,6 +1695,19 @@ void checkDrumEncoder() {
             channel1 = 0;
           }
         }
+        if (paramChange && channel1 == 0) {
+          channel1_CC++;
+          if (channel1_CC > CHANNEL_CC_MAX) {
+            channel1_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel1 == 1) {
+          channel1_MIDI++;
+          if (channel1_MIDI > CHANNEL_MIDI_MAX) {
+            channel1_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
+
         updatechannel1();
         break;
 
@@ -1270,6 +1720,18 @@ void checkDrumEncoder() {
           channel2++;
           if (channel2 > CHANNEL_PARAMS) {
             channel2 = 0;
+          }
+        }
+        if (paramChange && channel2 == 0) {
+          channel2_CC++;
+          if (channel2_CC > CHANNEL_CC_MAX) {
+            channel2_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel2 == 1) {
+          channel2_MIDI++;
+          if (channel2_MIDI > CHANNEL_MIDI_MAX) {
+            channel2_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel2();
@@ -1286,6 +1748,18 @@ void checkDrumEncoder() {
             channel3 = 0;
           }
         }
+        if (paramChange && channel3 == 0) {
+          channel3_CC++;
+          if (channel3_CC > CHANNEL_CC_MAX) {
+            channel3_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel3 == 1) {
+          channel3_MIDI++;
+          if (channel3_MIDI > CHANNEL_MIDI_MAX) {
+            channel3_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel3();
         break;
 
@@ -1298,6 +1772,18 @@ void checkDrumEncoder() {
           channel4++;
           if (channel4 > CHANNEL_PARAMS) {
             channel4 = 0;
+          }
+        }
+        if (paramChange && channel4 == 0) {
+          channel4_CC++;
+          if (channel4_CC > CHANNEL_CC_MAX) {
+            channel4_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel4 == 1) {
+          channel4_MIDI++;
+          if (channel4_MIDI > CHANNEL_MIDI_MAX) {
+            channel4_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel4();
@@ -1314,6 +1800,18 @@ void checkDrumEncoder() {
             channel5 = 0;
           }
         }
+        if (paramChange && channel5 == 0) {
+          channel5_CC++;
+          if (channel5_CC > CHANNEL_CC_MAX) {
+            channel5_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel5 == 1) {
+          channel5_MIDI++;
+          if (channel5_MIDI > CHANNEL_MIDI_MAX) {
+            channel5_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel5();
         break;
 
@@ -1326,6 +1824,18 @@ void checkDrumEncoder() {
           channel6++;
           if (channel6 > CHANNEL_PARAMS) {
             channel6 = 0;
+          }
+        }
+        if (paramChange && channel6 == 0) {
+          channel6_CC++;
+          if (channel6_CC > CHANNEL_CC_MAX) {
+            channel6_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel6 == 1) {
+          channel6_MIDI++;
+          if (channel6_MIDI > CHANNEL_MIDI_MAX) {
+            channel6_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel6();
@@ -1342,6 +1852,18 @@ void checkDrumEncoder() {
             channel7 = 0;
           }
         }
+        if (paramChange && channel7 == 0) {
+          channel7_CC++;
+          if (channel7_CC > CHANNEL_CC_MAX) {
+            channel7_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel7 == 1) {
+          channel7_MIDI++;
+          if (channel7_MIDI > CHANNEL_MIDI_MAX) {
+            channel7_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel7();
         break;
 
@@ -1354,6 +1876,18 @@ void checkDrumEncoder() {
           channel8++;
           if (channel8 > CHANNEL_PARAMS) {
             channel8 = 0;
+          }
+        }
+        if (paramChange && channel8 == 0) {
+          channel8_CC++;
+          if (channel8_CC > CHANNEL_CC_MAX) {
+            channel8_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel8 == 1) {
+          channel8_MIDI++;
+          if (channel8_MIDI > CHANNEL_MIDI_MAX) {
+            channel8_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel8();
@@ -1370,6 +1904,18 @@ void checkDrumEncoder() {
             channel9 = 0;
           }
         }
+        if (paramChange && channel9 == 0) {
+          channel9_CC++;
+          if (channel9_CC > CHANNEL_CC_MAX) {
+            channel9_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel9 == 1) {
+          channel9_MIDI++;
+          if (channel9_MIDI > CHANNEL_MIDI_MAX) {
+            channel9_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel9();
         break;
 
@@ -1384,6 +1930,18 @@ void checkDrumEncoder() {
             channel10 = 0;
           }
         }
+        if (paramChange && channel10 == 0) {
+          channel10_CC++;
+          if (channel10_CC > CHANNEL_CC_MAX) {
+            channel10_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel10 == 1) {
+          channel10_MIDI++;
+          if (channel10_MIDI > CHANNEL_MIDI_MAX) {
+            channel10_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel10();
         break;
 
@@ -1396,6 +1954,18 @@ void checkDrumEncoder() {
           channel11++;
           if (channel11 > CHANNEL_PARAMS) {
             channel11 = 0;
+          }
+        }
+        if (paramChange && channel11 == 0) {
+          channel11_CC++;
+          if (channel11_CC > CHANNEL_CC_MAX) {
+            channel1_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel11 == 1) {
+          channel11_MIDI++;
+          if (channel11_MIDI > CHANNEL_MIDI_MAX) {
+            channel11_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel11();
@@ -1413,6 +1983,18 @@ void checkDrumEncoder() {
             channel12 = 0;
           }
         }
+        if (paramChange && channel12 == 0) {
+          channel12_CC++;
+          if (channel12_CC > CHANNEL_CC_MAX) {
+            channel12_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel12 == 1) {
+          channel12_MIDI++;
+          if (channel12_MIDI > CHANNEL_MIDI_MAX) {
+            channel12_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel12();
         break;
 
@@ -1425,6 +2007,18 @@ void checkDrumEncoder() {
           channel13++;
           if (channel13 > CHANNEL_PARAMS) {
             channel13 = 0;
+          }
+        }
+        if (paramChange && channel13 == 0) {
+          channel13_CC++;
+          if (channel13_CC > CHANNEL_CC_MAX) {
+            channel13_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel13 == 1) {
+          channel13_MIDI++;
+          if (channel13_MIDI > CHANNEL_MIDI_MAX) {
+            channel13_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel13();
@@ -1441,6 +2035,18 @@ void checkDrumEncoder() {
             channel14 = 0;
           }
         }
+        if (paramChange && channel14 == 0) {
+          channel14_CC++;
+          if (channel14_CC > CHANNEL_CC_MAX) {
+            channel14_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel1 == 14) {
+          channel14_MIDI++;
+          if (channel14_MIDI > CHANNEL_MIDI_MAX) {
+            channel14_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel4();
         break;
 
@@ -1455,6 +2061,18 @@ void checkDrumEncoder() {
             channel15 = 0;
           }
         }
+        if (paramChange && channel15 == 0) {
+          channel15_CC++;
+          if (channel15_CC > CHANNEL_CC_MAX) {
+            channel15_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel15 == 1) {
+          channel15_MIDI++;
+          if (channel15_MIDI > CHANNEL_MIDI_MAX) {
+            channel15_MIDI = CHANNEL_MIDI_MIN;
+          }
+        }
         updatechannel15();
         break;
 
@@ -1467,6 +2085,18 @@ void checkDrumEncoder() {
           channel16++;
           if (channel16 > CHANNEL_PARAMS) {
             channel16 = 0;
+          }
+        }
+        if (paramChange && channel16 == 0) {
+          channel16_CC++;
+          if (channel16_CC > CHANNEL_CC_MAX) {
+            channel16_CC = CHANNEL_CC_MIN;
+          }
+        }
+        if (paramChange && channel16 == 1) {
+          channel16_MIDI++;
+          if (channel16_MIDI > CHANNEL_MIDI_MAX) {
+            channel16_MIDI = CHANNEL_MIDI_MIN;
           }
         }
         updatechannel16();
@@ -1596,7 +2226,8 @@ void checkDrumEncoder() {
     param_encPrevious = param_encRead;
 
   } else if ((param_encCW && param_encRead < param_encPrevious - 3) || (!param_encCW && param_encRead > param_encPrevious + 3)) {
-    if (!paramEdit) {
+
+    if (!paramEdit && !paramChange) {
       param_number = param_number - 1;
       if (param_number < 1) {
         param_number = 25;
@@ -1625,6 +2256,18 @@ void checkDrumEncoder() {
             channel1 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel1 == 0) {
+          channel1_CC--;
+          if (channel1_CC < CHANNEL_CC_MIN) {
+            channel1_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel1 == 1) {
+          channel1_MIDI--;
+          if (channel1_MIDI < CHANNEL_MIDI_MIN) {
+            channel1_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel1();
         break;
 
@@ -1637,6 +2280,18 @@ void checkDrumEncoder() {
           channel2--;
           if (channel2 < 0) {
             channel2 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel2 == 0) {
+          channel2_CC--;
+          if (channel2_CC < CHANNEL_CC_MIN) {
+            channel2_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel2 == 1) {
+          channel2_MIDI--;
+          if (channel2_MIDI < CHANNEL_MIDI_MIN) {
+            channel2_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel2();
@@ -1653,6 +2308,18 @@ void checkDrumEncoder() {
             channel3 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel3 == 0) {
+          channel3_CC--;
+          if (channel3_CC < CHANNEL_CC_MIN) {
+            channel3_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel3 == 1) {
+          channel3_MIDI--;
+          if (channel3_MIDI < CHANNEL_MIDI_MIN) {
+            channel3_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel3();
         break;
 
@@ -1665,6 +2332,18 @@ void checkDrumEncoder() {
           channel4--;
           if (channel4 < 0) {
             channel4 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel4 == 0) {
+          channel4_CC--;
+          if (channel4_CC < CHANNEL_CC_MIN) {
+            channel4_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel4 == 1) {
+          channel4_MIDI--;
+          if (channel4_MIDI < CHANNEL_MIDI_MIN) {
+            channel4_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel4();
@@ -1681,6 +2360,18 @@ void checkDrumEncoder() {
             channel5 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel5 == 0) {
+          channel5_CC--;
+          if (channel5_CC < CHANNEL_CC_MIN) {
+            channel5_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel5 == 1) {
+          channel5_MIDI--;
+          if (channel5_MIDI < CHANNEL_MIDI_MIN) {
+            channel5_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel5();
         break;
 
@@ -1693,6 +2384,18 @@ void checkDrumEncoder() {
           channel6--;
           if (channel6 < 0) {
             channel6 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel6 == 0) {
+          channel6_CC--;
+          if (channel6_CC < CHANNEL_CC_MIN) {
+            channel6_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel6 == 1) {
+          channel6_MIDI--;
+          if (channel6_MIDI < CHANNEL_MIDI_MIN) {
+            channel6_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel6();
@@ -1709,6 +2412,18 @@ void checkDrumEncoder() {
             channel7 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel7 == 0) {
+          channel7_CC--;
+          if (channel7_CC < CHANNEL_CC_MIN) {
+            channel7_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel7 == 1) {
+          channel7_MIDI--;
+          if (channel7_MIDI < CHANNEL_MIDI_MIN) {
+            channel7_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel7();
         break;
 
@@ -1721,6 +2436,18 @@ void checkDrumEncoder() {
           channel8--;
           if (channel8 < 0) {
             channel8 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel8 == 0) {
+          channel8_CC--;
+          if (channel8_CC < CHANNEL_CC_MIN) {
+            channel8_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel8 == 1) {
+          channel8_MIDI--;
+          if (channel8_MIDI < CHANNEL_MIDI_MIN) {
+            channel8_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel8();
@@ -1737,6 +2464,18 @@ void checkDrumEncoder() {
             channel9 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel9 == 0) {
+          channel9_CC--;
+          if (channel9_CC < CHANNEL_CC_MIN) {
+            channel9_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel9 == 1) {
+          channel9_MIDI--;
+          if (channel9_MIDI < CHANNEL_MIDI_MIN) {
+            channel9_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel9();
         break;
 
@@ -1749,6 +2488,18 @@ void checkDrumEncoder() {
           channel10--;
           if (channel10 < 0) {
             channel10 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel10 == 0) {
+          channel10_CC--;
+          if (channel10_CC < CHANNEL_CC_MIN) {
+            channel10_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel10 == 1) {
+          channel10_MIDI--;
+          if (channel10_MIDI < CHANNEL_MIDI_MIN) {
+            channel10_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel10();
@@ -1765,6 +2516,18 @@ void checkDrumEncoder() {
             channel11 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel11 == 0) {
+          channel11_CC--;
+          if (channel11_CC < CHANNEL_CC_MIN) {
+            channel11_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel11 == 1) {
+          channel11_MIDI--;
+          if (channel11_MIDI < CHANNEL_MIDI_MIN) {
+            channel11_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel11();
         break;
 
@@ -1777,6 +2540,18 @@ void checkDrumEncoder() {
           channel12--;
           if (channel12 < 0) {
             channel12 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel12 == 0) {
+          channel12_CC--;
+          if (channel12_CC < CHANNEL_CC_MIN) {
+            channel12_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel12 == 1) {
+          channel12_MIDI--;
+          if (channel12_MIDI < CHANNEL_MIDI_MIN) {
+            channel12_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel12();
@@ -1793,6 +2568,18 @@ void checkDrumEncoder() {
             channel13 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel13 == 0) {
+          channel13_CC--;
+          if (channel13_CC < CHANNEL_CC_MIN) {
+            channel13_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel13 == 1) {
+          channel13_MIDI--;
+          if (channel13_MIDI < CHANNEL_MIDI_MIN) {
+            channel13_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel13();
         break;
 
@@ -1805,6 +2592,18 @@ void checkDrumEncoder() {
           channel14--;
           if (channel14 < 0) {
             channel14 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel14 == 0) {
+          channel14_CC--;
+          if (channel14_CC < CHANNEL_CC_MIN) {
+            channel14_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel14 == 1) {
+          channel14_MIDI--;
+          if (channel14_MIDI < CHANNEL_MIDI_MIN) {
+            channel14_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel14();
@@ -1821,6 +2620,18 @@ void checkDrumEncoder() {
             channel15 = CHANNEL_PARAMS;
           }
         }
+        if (paramChange && channel15 == 0) {
+          channel15_CC--;
+          if (channel15_CC < CHANNEL_CC_MIN) {
+            channel15_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel15 == 1) {
+          channel15_MIDI--;
+          if (channel15_MIDI < CHANNEL_MIDI_MIN) {
+            channel15_MIDI = CHANNEL_MIDI_MAX;
+          }
+        }
         updatechannel15();
         break;
 
@@ -1833,6 +2644,18 @@ void checkDrumEncoder() {
           channel16--;
           if (channel16 < 36) {
             channel16 = CHANNEL_PARAMS;
+          }
+        }
+        if (paramChange && channel16 == 0) {
+          channel16_CC--;
+          if (channel16_CC < CHANNEL_CC_MIN) {
+            channel16_CC = CHANNEL_CC_MAX;
+          }
+        }
+        if (paramChange && channel16 == 1) {
+          channel16_MIDI--;
+          if (channel16_MIDI < CHANNEL_MIDI_MIN) {
+            channel16_MIDI = CHANNEL_MIDI_MAX;
           }
         }
         updatechannel16();
@@ -1956,11 +2779,17 @@ void checkDrumEncoder() {
 
 void checkSwitches() {
 
-  paramButton.update();
-  if (paramButton.numClicks() == 1) {
-    paramEdit = !paramEdit;
-  } else if (paramButton.numClicks() == 2) {
+  paramButton.update(digitalRead(PARAM_SW), 50, LOW);
+  if (paramButton.held()) {
     paramChange = !paramChange;
+    if (paramChange) {
+      paramEdit = false;
+    }
+    if (!paramChange) {
+      paramEdit = false;
+    }
+  } else if (paramButton.released(true)) {
+    paramEdit = !paramEdit;
   }
 
   saveButton.update();

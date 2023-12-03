@@ -44,7 +44,7 @@
 
 #define ENCODER_PARAMA 41
 #define ENCODER_PARAMB 40
-#define ENCODER_PREVIOUS 39
+#define PARAM_SW 39
 
 #define SAVE_SW 33
 #define SETTINGS_SW 34
@@ -59,7 +59,7 @@ TButton recallButton{RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton saveButton{SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton settingsButton{SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 TButton backButton{BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton paramButton{ENCODER_PREVIOUS, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
+
 Encoder encoder(ENC_B, ENC_A); //This often needs the pins swapping depending on the encoder
 Encoder param_encoder(ENCODER_PARAMA, ENCODER_PARAMB);
 
@@ -114,7 +114,7 @@ void setupHardware() {
   analogWriteFrequency(BREATH, 9155.27);
 
   pinMode(RECALL_SW, INPUT_PULLUP);
-  pinMode(ENCODER_PREVIOUS, INPUT_PULLUP);
+  pinMode(PARAM_SW, INPUT_PULLUP);
   pinMode(SAVE_SW, INPUT_PULLUP);
   pinMode(SETTINGS_SW, INPUT_PULLUP);
   pinMode(BACK_SW, INPUT_PULLUP);
