@@ -23,7 +23,7 @@
 #include <MIDI.h>
 #include "MidiCC.h"
 #include "Constants.h"
-#include "Gate.h"
+//#include "Gate.h"
 #include "Parameters.h"
 #include "PatchMgr.h"
 #include <USBHost_t36.h>
@@ -219,6 +219,51 @@ void myControlChange(byte channel, byte number, byte value) {
       analogWrite(BREATH, newvalue);
     }
   }
+
+  for (int i = 0; i < 16; i++) {
+    if ((CC_MAP[i][2] == 0 && CC_MAP[i][4] == 2) || (CC_MAP[i][2] == 0 && CC_MAP[i][4] == 3)) {
+      if (CC_MAP[i][1] == channel && CC_MAP[i][0] == number) {
+        int newvalue = value;
+
+        if (CC_MAP[i][4] == 2) {
+          newvalue = map(newvalue, 0, 127, 0, 7720);
+          analogWrite(CC_MAP[i][3], newvalue);
+        }
+
+        if (CC_MAP[i][4] == 3) {
+          newvalue = map(newvalue, 0, 127, 0, 15440);
+          analogWrite(CC_MAP[i][3], newvalue);
+        }
+      }
+    }
+  }
+
+  for (int i = 0; i < 16; i++) {
+    if ((CC_MAP[i][2] == 0 && CC_MAP[i][4] == 4) || (CC_MAP[i][2] == 0 && CC_MAP[i][4] == 5)) {
+      if (CC_MAP[i][1] == channel && 99 == number) {
+        value99 = value;
+      }
+      if (CC_MAP[i][1] == channel && 98 == number) {
+        value98 = value;
+      }
+      if (CC_MAP[i][1] == channel && 6 == number) {
+        value6 = value;
+      }
+      if (CC_MAP[i][1] == channel && 38 == number) {
+        value38 = value;
+      }
+
+      if (CC_MAP[i][4] == 4) {
+        value6 = map(value6, 0, 1023, 0, 7720);
+        analogWrite(CC_MAP[i][3], value6);
+      }
+
+      if (CC_MAP[i][4] == 5) {
+        value6 = map(value6, 0, 1023, 0, 15440);
+        analogWrite(CC_MAP[i][3], value6);
+      }
+    }
+  }
 }
 
 void myAfterTouch(byte channel, byte value) {
@@ -240,6 +285,8 @@ void updatepolyCount() {
   GATE_NOTES[5] = gate6;
   GATE_NOTES[6] = gate7;
   GATE_NOTES[7] = gate8;
+
+  updateCCMAP();
 }
 
 void updatechannel1() {
@@ -271,7 +318,7 @@ void updatechannel1() {
 }
 
 void updatechannel2() {
-    switch (channel2_CC) {
+  switch (channel2_CC) {
     case 0:
       showCurrentParameterPage("Channel 2", "CC Number " + String(channel2_CC));
       break;
@@ -299,7 +346,7 @@ void updatechannel2() {
 }
 
 void updatechannel3() {
-    switch (channel3) {
+  switch (channel3) {
     case 0:
       showCurrentParameterPage("Channel 3", "CC Number " + String(channel3_CC));
       break;
@@ -327,7 +374,7 @@ void updatechannel3() {
 }
 
 void updatechannel4() {
-    switch (channel4) {
+  switch (channel4) {
     case 0:
       showCurrentParameterPage("Channel 4", "CC Number " + String(channel4_CC));
       break;
@@ -355,7 +402,7 @@ void updatechannel4() {
 }
 
 void updatechannel5() {
-    switch (channel5) {
+  switch (channel5) {
     case 0:
       showCurrentParameterPage("Channel 5", "CC Number " + String(channel5_CC));
       break;
@@ -383,7 +430,7 @@ void updatechannel5() {
 }
 
 void updatechannel6() {
-    switch (channel6) {
+  switch (channel6) {
     case 0:
       showCurrentParameterPage("Channel 6", "CC Number " + String(channel6_CC));
       break;
@@ -411,7 +458,7 @@ void updatechannel6() {
 }
 
 void updatechannel7() {
-    switch (channel7) {
+  switch (channel7) {
     case 0:
       showCurrentParameterPage("Channel 7", "CC Number " + String(channel7_CC));
       break;
@@ -439,7 +486,7 @@ void updatechannel7() {
 }
 
 void updatechannel8() {
-    switch (channel8) {
+  switch (channel8) {
     case 0:
       showCurrentParameterPage("Channel 8", "CC Number " + String(channel8_CC));
       break;
@@ -467,7 +514,7 @@ void updatechannel8() {
 }
 
 void updatechannel9() {
-    switch (channel9) {
+  switch (channel9) {
     case 0:
       showCurrentParameterPage("Channel 9", "CC Number " + String(channel9_CC));
       break;
@@ -495,7 +542,7 @@ void updatechannel9() {
 }
 
 void updatechannel10() {
-    switch (channel10) {
+  switch (channel10) {
     case 0:
       showCurrentParameterPage("Channel 10", "CC Number " + String(channel10_CC));
       break;
@@ -523,7 +570,7 @@ void updatechannel10() {
 }
 
 void updatechannel11() {
-    switch (channel11) {
+  switch (channel11) {
     case 0:
       showCurrentParameterPage("Channel 11", "CC Number " + String(channel11_CC));
       break;
@@ -551,7 +598,7 @@ void updatechannel11() {
 }
 
 void updatechannel12() {
-    switch (channel12) {
+  switch (channel12) {
     case 0:
       showCurrentParameterPage("Channel 12", "CC Number " + String(channel12_CC));
       break;
@@ -579,7 +626,7 @@ void updatechannel12() {
 }
 
 void updatechannel13() {
-    switch (channel13) {
+  switch (channel13) {
     case 0:
       showCurrentParameterPage("Channel 13", "CC Number " + String(channel13_CC));
       break;
@@ -607,7 +654,7 @@ void updatechannel13() {
 }
 
 void updatechannel14() {
-    switch (channel14) {
+  switch (channel14) {
     case 0:
       showCurrentParameterPage("Channel 14", "CC Number " + String(channel14_CC));
       break;
@@ -635,7 +682,7 @@ void updatechannel14() {
 }
 
 void updatechannel15() {
-    switch (channel15) {
+  switch (channel15) {
     case 0:
       showCurrentParameterPage("Channel 15", "CC Number " + String(channel15_CC));
       break;
@@ -663,7 +710,7 @@ void updatechannel15() {
 }
 
 void updatechannel16() {
-    switch (channel16) {
+  switch (channel16) {
     case 0:
       showCurrentParameterPage("Channel 16", "CC Number " + String(channel16_CC));
       break;
@@ -1195,18 +1242,10 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   if (channel == gateChannel) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
-        ledOn(pin_index);
+        sr.writePin(pin_index, HIGH);
       }
     }
   }
-}
-
-void ledOn(int pin_index) {
-  sr.writePin(pin_index, HIGH);
-}
-
-void ledOff(int pin_index) {
-  sr.writePin(pin_index, LOW);
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
@@ -1374,7 +1413,7 @@ void myNoteOff(byte channel, byte note, byte velocity) {
   if (channel == gateChannel) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
-        ledOff(pin_index);
+        sr.writePin(pin_index, LOW);
       }
     }
   }
@@ -1594,6 +1633,58 @@ void setCurrentPatchData(String data[]) {
   //Switches
   updatepolyCount();
 
+  CC_MAP[0][0] = channel1_CC;
+  CC_MAP[1][0] = channel2_CC;
+  CC_MAP[2][0] = channel3_CC;
+  CC_MAP[3][0] = channel5_CC;
+  CC_MAP[4][0] = channel5_CC;
+  CC_MAP[5][0] = channel6_CC;
+  CC_MAP[6][0] = channel7_CC;
+  CC_MAP[7][0] = channel8_CC;
+  CC_MAP[8][0] = channel9_CC;
+  CC_MAP[9][0] = channel10_CC;
+  CC_MAP[10][0] = channel11_CC;
+  CC_MAP[11][0] = channel12_CC;
+  CC_MAP[12][0] = channel13_CC;
+  CC_MAP[13][0] = channel14_CC;
+  CC_MAP[14][0] = channel15_CC;
+  CC_MAP[15][0] = channel16_CC;
+
+  CC_MAP[0][1] = channel1_MIDI;
+  CC_MAP[1][1] = channel2_MIDI;
+  CC_MAP[2][1] = channel3_MIDI;
+  CC_MAP[3][1] = channel5_MIDI;
+  CC_MAP[4][1] = channel5_MIDI;
+  CC_MAP[5][1] = channel6_MIDI;
+  CC_MAP[6][1] = channel7_MIDI;
+  CC_MAP[7][1] = channel8_MIDI;
+  CC_MAP[8][1] = channel9_MIDI;
+  CC_MAP[9][1] = channel10_MIDI;
+  CC_MAP[10][1] = channel11_MIDI;
+  CC_MAP[11][1] = channel12_MIDI;
+  CC_MAP[12][1] = channel13_MIDI;
+  CC_MAP[13][1] = channel14_MIDI;
+  CC_MAP[14][1] = channel15_MIDI;
+  CC_MAP[15][1] = channel16_MIDI;
+
+  CC_MAP[0][4] = channel1;
+  CC_MAP[1][4] = channel2;
+  CC_MAP[2][4] = channel3;
+  CC_MAP[3][4] = channel5;
+  CC_MAP[4][4] = channel5;
+  CC_MAP[5][4] = channel6;
+  CC_MAP[6][4] = channel7;
+  CC_MAP[7][4] = channel8;
+  CC_MAP[8][4] = channel9;
+  CC_MAP[9][4] = channel10;
+  CC_MAP[10][4] = channel11;
+  CC_MAP[11][4] = channel12;
+  CC_MAP[12][4] = channel13;
+  CC_MAP[13][4] = channel14;
+  CC_MAP[14][4] = channel15;
+  CC_MAP[15][4] = channel16;
+
+  updateCCMAP();
 
   //Patchname
   updatePatchname();
@@ -1619,6 +1710,181 @@ String getCurrentPatchData() {
 
 void updatePatchname() {
   showPatchPage(String(patchNo), patchName);
+}
+
+void updateCCMAP() {
+  switch (polycount) {
+    case 0:
+      CC_MAP[0][2] = 0;
+      CC_MAP[1][2] = 0;
+      CC_MAP[2][2] = 0;
+      CC_MAP[3][2] = 0;
+      CC_MAP[4][2] = 0;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 0;
+      CC_MAP[9][2] = 0;
+      CC_MAP[10][2] = 0;
+      CC_MAP[11][2] = 0;
+      CC_MAP[12][2] = 0;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 1:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 0;
+      CC_MAP[2][2] = 0;
+      CC_MAP[3][2] = 0;
+      CC_MAP[4][2] = 0;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 0;
+      CC_MAP[10][2] = 0;
+      CC_MAP[11][2] = 0;
+      CC_MAP[12][2] = 0;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 2:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 0;
+      CC_MAP[3][2] = 0;
+      CC_MAP[4][2] = 0;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 0;
+      CC_MAP[11][2] = 0;
+      CC_MAP[12][2] = 0;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 3:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 0;
+      CC_MAP[4][2] = 0;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 0;
+      CC_MAP[12][2] = 0;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 4:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 1;
+      CC_MAP[4][2] = 0;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 1;
+      CC_MAP[12][2] = 0;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 5:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 1;
+      CC_MAP[4][2] = 1;
+      CC_MAP[5][2] = 0;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 1;
+      CC_MAP[12][2] = 1;
+      CC_MAP[13][2] = 0;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 6:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 1;
+      CC_MAP[4][2] = 1;
+      CC_MAP[5][2] = 1;
+      CC_MAP[6][2] = 0;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 1;
+      CC_MAP[12][2] = 1;
+      CC_MAP[13][2] = 1;
+      CC_MAP[14][2] = 0;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 7:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 1;
+      CC_MAP[4][2] = 1;
+      CC_MAP[5][2] = 1;
+      CC_MAP[6][2] = 1;
+      CC_MAP[7][2] = 0;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 1;
+      CC_MAP[12][2] = 1;
+      CC_MAP[13][2] = 1;
+      CC_MAP[14][2] = 1;
+      CC_MAP[15][2] = 0;
+      break;
+
+    case 8:
+      CC_MAP[0][2] = 1;
+      CC_MAP[1][2] = 1;
+      CC_MAP[2][2] = 1;
+      CC_MAP[3][2] = 1;
+      CC_MAP[4][2] = 1;
+      CC_MAP[5][2] = 1;
+      CC_MAP[6][2] = 1;
+      CC_MAP[7][2] = 1;
+      CC_MAP[8][2] = 1;
+      CC_MAP[9][2] = 1;
+      CC_MAP[10][2] = 1;
+      CC_MAP[11][2] = 1;
+      CC_MAP[12][2] = 1;
+      CC_MAP[13][2] = 1;
+      CC_MAP[14][2] = 1;
+      CC_MAP[15][2] = 1;
+      break;
+  }
 }
 
 void checkeepromChanges() {
@@ -1694,18 +1960,21 @@ void checkDrumEncoder() {
           if (channel1 > CHANNEL_PARAMS) {
             channel1 = 0;
           }
+          CC_MAP[0][4] = channel1;
         }
         if (paramChange && channel1 == 0) {
           channel1_CC++;
           if (channel1_CC > CHANNEL_CC_MAX) {
             channel1_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[0][0] = channel1_CC;
         }
         if (paramChange && channel1 == 1) {
           channel1_MIDI++;
           if (channel1_MIDI > CHANNEL_MIDI_MAX) {
             channel1_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[0][1] = channel1_MIDI;
         }
 
         updatechannel1();
@@ -1721,18 +1990,21 @@ void checkDrumEncoder() {
           if (channel2 > CHANNEL_PARAMS) {
             channel2 = 0;
           }
+          CC_MAP[1][4] = channel2;
         }
         if (paramChange && channel2 == 0) {
           channel2_CC++;
           if (channel2_CC > CHANNEL_CC_MAX) {
             channel2_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[1][0] = channel2_CC;
         }
         if (paramChange && channel2 == 1) {
           channel2_MIDI++;
           if (channel2_MIDI > CHANNEL_MIDI_MAX) {
             channel2_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[1][1] = channel2_MIDI;
         }
         updatechannel2();
         break;
@@ -1747,18 +2019,21 @@ void checkDrumEncoder() {
           if (channel3 > CHANNEL_PARAMS) {
             channel3 = 0;
           }
+          CC_MAP[2][4] = channel3;
         }
         if (paramChange && channel3 == 0) {
           channel3_CC++;
           if (channel3_CC > CHANNEL_CC_MAX) {
             channel3_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[2][0] = channel3_CC;
         }
         if (paramChange && channel3 == 1) {
           channel3_MIDI++;
           if (channel3_MIDI > CHANNEL_MIDI_MAX) {
             channel3_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[2][1] = channel3_MIDI;
         }
         updatechannel3();
         break;
@@ -1773,18 +2048,21 @@ void checkDrumEncoder() {
           if (channel4 > CHANNEL_PARAMS) {
             channel4 = 0;
           }
+          CC_MAP[3][4] = channel4;
         }
         if (paramChange && channel4 == 0) {
           channel4_CC++;
           if (channel4_CC > CHANNEL_CC_MAX) {
             channel4_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[3][0] = channel4_CC;
         }
         if (paramChange && channel4 == 1) {
           channel4_MIDI++;
           if (channel4_MIDI > CHANNEL_MIDI_MAX) {
             channel4_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[3][1] = channel4_MIDI;
         }
         updatechannel4();
         break;
@@ -1799,18 +2077,21 @@ void checkDrumEncoder() {
           if (channel5 > CHANNEL_PARAMS) {
             channel5 = 0;
           }
+          CC_MAP[4][4] = channel5;
         }
         if (paramChange && channel5 == 0) {
           channel5_CC++;
           if (channel5_CC > CHANNEL_CC_MAX) {
             channel5_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[4][0] = channel5_CC;
         }
         if (paramChange && channel5 == 1) {
           channel5_MIDI++;
           if (channel5_MIDI > CHANNEL_MIDI_MAX) {
             channel5_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[4][1] = channel5_MIDI;
         }
         updatechannel5();
         break;
@@ -1825,18 +2106,21 @@ void checkDrumEncoder() {
           if (channel6 > CHANNEL_PARAMS) {
             channel6 = 0;
           }
+          CC_MAP[5][4] = channel6;
         }
         if (paramChange && channel6 == 0) {
           channel6_CC++;
           if (channel6_CC > CHANNEL_CC_MAX) {
             channel6_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[5][0] = channel6_CC;
         }
         if (paramChange && channel6 == 1) {
           channel6_MIDI++;
           if (channel6_MIDI > CHANNEL_MIDI_MAX) {
             channel6_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[5][1] = channel6_MIDI;
         }
         updatechannel6();
         break;
@@ -1851,18 +2135,21 @@ void checkDrumEncoder() {
           if (channel7 > CHANNEL_PARAMS) {
             channel7 = 0;
           }
+          CC_MAP[6][4] = channel7;
         }
         if (paramChange && channel7 == 0) {
           channel7_CC++;
           if (channel7_CC > CHANNEL_CC_MAX) {
             channel7_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[6][0] = channel7_CC;
         }
         if (paramChange && channel7 == 1) {
           channel7_MIDI++;
           if (channel7_MIDI > CHANNEL_MIDI_MAX) {
             channel7_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[6][1] = channel7_MIDI;
         }
         updatechannel7();
         break;
@@ -1877,25 +2164,28 @@ void checkDrumEncoder() {
           if (channel8 > CHANNEL_PARAMS) {
             channel8 = 0;
           }
+          CC_MAP[7][4] = channel8;
         }
         if (paramChange && channel8 == 0) {
           channel8_CC++;
           if (channel8_CC > CHANNEL_CC_MAX) {
             channel8_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[7][0] = channel8_CC;
         }
         if (paramChange && channel8 == 1) {
           channel8_MIDI++;
           if (channel8_MIDI > CHANNEL_MIDI_MAX) {
             channel8_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[7][1] = channel8_MIDI;
         }
         updatechannel8();
         break;
 
       case 10:
         if (polycount > 0) {
-          showCurrentParameterPage("Channel 9", "Poly Mode");
+          showCurrentParameterPage("Channel 9", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -1903,25 +2193,28 @@ void checkDrumEncoder() {
           if (channel9 > CHANNEL_PARAMS) {
             channel9 = 0;
           }
+          CC_MAP[8][4] = channel9;
         }
         if (paramChange && channel9 == 0) {
           channel9_CC++;
           if (channel9_CC > CHANNEL_CC_MAX) {
             channel9_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[8][0] = channel9_CC;
         }
         if (paramChange && channel9 == 1) {
           channel9_MIDI++;
           if (channel9_MIDI > CHANNEL_MIDI_MAX) {
             channel9_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[8][1] = channel9_MIDI;
         }
         updatechannel9();
         break;
 
       case 11:
         if (polycount > 1) {
-          showCurrentParameterPage("Channel 10", "Poly Mode");
+          showCurrentParameterPage("Channel 10", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -1929,25 +2222,28 @@ void checkDrumEncoder() {
           if (channel10 > CHANNEL_PARAMS) {
             channel10 = 0;
           }
+          CC_MAP[9][4] = channel10;
         }
         if (paramChange && channel10 == 0) {
           channel10_CC++;
           if (channel10_CC > CHANNEL_CC_MAX) {
             channel10_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[9][0] = channel10_CC;
         }
         if (paramChange && channel10 == 1) {
           channel10_MIDI++;
           if (channel10_MIDI > CHANNEL_MIDI_MAX) {
             channel10_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[9][1] = channel10_MIDI;
         }
         updatechannel10();
         break;
 
       case 12:
         if (polycount > 2) {
-          showCurrentParameterPage("Channel 11", "Poly Mode");
+          showCurrentParameterPage("Channel 11", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -1955,18 +2251,21 @@ void checkDrumEncoder() {
           if (channel11 > CHANNEL_PARAMS) {
             channel11 = 0;
           }
+          CC_MAP[10][4] = channel11;
         }
         if (paramChange && channel11 == 0) {
           channel11_CC++;
           if (channel11_CC > CHANNEL_CC_MAX) {
             channel1_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[10][0] = channel11_CC;
         }
         if (paramChange && channel11 == 1) {
           channel11_MIDI++;
           if (channel11_MIDI > CHANNEL_MIDI_MAX) {
             channel11_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[10][1] = channel11_MIDI;
         }
         updatechannel11();
         break;
@@ -1974,7 +2273,7 @@ void checkDrumEncoder() {
 
       case 13:
         if (polycount > 3) {
-          showCurrentParameterPage("Channel 12", "Poly Mode");
+          showCurrentParameterPage("Channel 12", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -1982,25 +2281,28 @@ void checkDrumEncoder() {
           if (channel12 > CHANNEL_PARAMS) {
             channel12 = 0;
           }
+          CC_MAP[11][4] = channel12;
         }
         if (paramChange && channel12 == 0) {
           channel12_CC++;
           if (channel12_CC > CHANNEL_CC_MAX) {
             channel12_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[11][0] = channel12_CC;
         }
         if (paramChange && channel12 == 1) {
           channel12_MIDI++;
           if (channel12_MIDI > CHANNEL_MIDI_MAX) {
             channel12_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[11][1] = channel12_MIDI;
         }
         updatechannel12();
         break;
 
       case 14:
         if (polycount > 4) {
-          showCurrentParameterPage("Channel 13", "Poly Mode");
+          showCurrentParameterPage("Channel 13", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2008,25 +2310,28 @@ void checkDrumEncoder() {
           if (channel13 > CHANNEL_PARAMS) {
             channel13 = 0;
           }
+          CC_MAP[12][4] = channel13;
         }
         if (paramChange && channel13 == 0) {
           channel13_CC++;
           if (channel13_CC > CHANNEL_CC_MAX) {
             channel13_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[12][0] = channel13_CC;
         }
         if (paramChange && channel13 == 1) {
           channel13_MIDI++;
           if (channel13_MIDI > CHANNEL_MIDI_MAX) {
             channel13_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[12][1] = channel13_MIDI;
         }
         updatechannel13();
         break;
 
       case 15:
         if (polycount > 5) {
-          showCurrentParameterPage("Channel 14", "Poly Mode");
+          showCurrentParameterPage("Channel 14", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2034,25 +2339,28 @@ void checkDrumEncoder() {
           if (channel14 > CHANNEL_PARAMS) {
             channel14 = 0;
           }
+          CC_MAP[13][4] = channel14;
         }
         if (paramChange && channel14 == 0) {
           channel14_CC++;
           if (channel14_CC > CHANNEL_CC_MAX) {
             channel14_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[13][0] = channel14_CC;
         }
         if (paramChange && channel1 == 14) {
           channel14_MIDI++;
           if (channel14_MIDI > CHANNEL_MIDI_MAX) {
             channel14_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[13][1] = channel14_MIDI;
         }
         updatechannel4();
         break;
 
       case 16:
         if (polycount > 6) {
-          showCurrentParameterPage("Channel 15", "Poly Mode");
+          showCurrentParameterPage("Channel 15", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2060,25 +2368,28 @@ void checkDrumEncoder() {
           if (channel15 > CHANNEL_PARAMS) {
             channel15 = 0;
           }
+          CC_MAP[14][4] = channel15;
         }
         if (paramChange && channel15 == 0) {
           channel15_CC++;
           if (channel15_CC > CHANNEL_CC_MAX) {
             channel15_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[14][0] = channel15_CC;
         }
         if (paramChange && channel15 == 1) {
           channel15_MIDI++;
           if (channel15_MIDI > CHANNEL_MIDI_MAX) {
             channel15_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[14][1] = channel15_MIDI;
         }
         updatechannel15();
         break;
 
       case 17:
         if (polycount > 7) {
-          showCurrentParameterPage("Channel 16", "Poly Mode");
+          showCurrentParameterPage("Channel 16", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2086,25 +2397,28 @@ void checkDrumEncoder() {
           if (channel16 > CHANNEL_PARAMS) {
             channel16 = 0;
           }
+          CC_MAP[15][4] = channel16;
         }
         if (paramChange && channel16 == 0) {
           channel16_CC++;
           if (channel16_CC > CHANNEL_CC_MAX) {
             channel16_CC = CHANNEL_CC_MIN;
           }
+          CC_MAP[15][0] = channel16_CC;
         }
         if (paramChange && channel16 == 1) {
           channel16_MIDI++;
           if (channel16_MIDI > CHANNEL_MIDI_MAX) {
             channel16_MIDI = CHANNEL_MIDI_MIN;
           }
+          CC_MAP[15][1] = channel16_MIDI;
         }
         updatechannel16();
         break;
 
       case 18:
         if (polycount > 0) {
-          showCurrentParameterPage("Gate 1", "Poly Mode");
+          showCurrentParameterPage("Gate 1", "Gate Mode");
           break;
         }
         if (gate1 < 36) gate1 = 36;
@@ -2119,7 +2433,7 @@ void checkDrumEncoder() {
 
       case 19:
         if (polycount > 1) {
-          showCurrentParameterPage("Gate 2", "Poly Mode");
+          showCurrentParameterPage("Gate 2", "Gate Mode");
           break;
         }
         if (gate2 < 36) gate2 = 36;
@@ -2134,7 +2448,7 @@ void checkDrumEncoder() {
 
       case 20:
         if (polycount > 2) {
-          showCurrentParameterPage("Gate 3", "Poly Mode");
+          showCurrentParameterPage("Gate 3", "Gate Mode");
           break;
         }
         if (gate3 < 36) gate3 = 36;
@@ -2149,7 +2463,7 @@ void checkDrumEncoder() {
 
       case 21:
         if (polycount > 3) {
-          showCurrentParameterPage("Gate 4", "Poly Mode");
+          showCurrentParameterPage("Gate 4", "Gate Mode");
           break;
         }
         if (gate4 < 36) gate4 = 36;
@@ -2164,7 +2478,7 @@ void checkDrumEncoder() {
 
       case 22:
         if (polycount > 4) {
-          showCurrentParameterPage("Gate 5", "Poly Mode");
+          showCurrentParameterPage("Gate 5", "Gate Mode");
           break;
         }
         if (gate5 < 36) gate5 = 36;
@@ -2179,7 +2493,7 @@ void checkDrumEncoder() {
 
       case 23:
         if (polycount > 5) {
-          showCurrentParameterPage("Gate 6", "Poly Mode");
+          showCurrentParameterPage("Gate 6", "Gate Mode");
           break;
         }
         if (gate6 < 36) gate6 = 36;
@@ -2194,7 +2508,7 @@ void checkDrumEncoder() {
 
       case 24:
         if (polycount > 6) {
-          showCurrentParameterPage("Gate 7", "Poly Mode");
+          showCurrentParameterPage("Gate 7", "Gate Mode");
           break;
         }
         if (gate7 < 36) gate7 = 36;
@@ -2209,7 +2523,7 @@ void checkDrumEncoder() {
 
       case 25:
         if (polycount > 7) {
-          showCurrentParameterPage("Gate 8", "Poly Mode");
+          showCurrentParameterPage("Gate 8", "Gate Mode");
           break;
         }
         if (gate8 < 36) gate8 = 36;
@@ -2255,18 +2569,21 @@ void checkDrumEncoder() {
           if (channel1 < 0) {
             channel1 = CHANNEL_PARAMS;
           }
+          CC_MAP[0][4] = channel1;
         }
         if (paramChange && channel1 == 0) {
           channel1_CC--;
           if (channel1_CC < CHANNEL_CC_MIN) {
             channel1_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[0][0] = channel1_CC;
         }
         if (paramChange && channel1 == 1) {
           channel1_MIDI--;
           if (channel1_MIDI < CHANNEL_MIDI_MIN) {
             channel1_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[0][1] = channel1_MIDI;
         }
         updatechannel1();
         break;
@@ -2281,18 +2598,21 @@ void checkDrumEncoder() {
           if (channel2 < 0) {
             channel2 = CHANNEL_PARAMS;
           }
+          CC_MAP[1][4] = channel2;
         }
         if (paramChange && channel2 == 0) {
           channel2_CC--;
           if (channel2_CC < CHANNEL_CC_MIN) {
             channel2_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[1][0] = channel2_CC;
         }
         if (paramChange && channel2 == 1) {
           channel2_MIDI--;
           if (channel2_MIDI < CHANNEL_MIDI_MIN) {
             channel2_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[1][1] = channel2_MIDI;
         }
         updatechannel2();
         break;
@@ -2307,18 +2627,21 @@ void checkDrumEncoder() {
           if (channel3 < 0) {
             channel3 = CHANNEL_PARAMS;
           }
+          CC_MAP[2][4] = channel3;
         }
         if (paramChange && channel3 == 0) {
           channel3_CC--;
           if (channel3_CC < CHANNEL_CC_MIN) {
             channel3_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[2][0] = channel3_CC;
         }
         if (paramChange && channel3 == 1) {
           channel3_MIDI--;
           if (channel3_MIDI < CHANNEL_MIDI_MIN) {
             channel3_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[2][1] = channel3_MIDI;
         }
         updatechannel3();
         break;
@@ -2333,18 +2656,21 @@ void checkDrumEncoder() {
           if (channel4 < 0) {
             channel4 = CHANNEL_PARAMS;
           }
+          CC_MAP[3][4] = channel4;
         }
         if (paramChange && channel4 == 0) {
           channel4_CC--;
           if (channel4_CC < CHANNEL_CC_MIN) {
             channel4_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[3][0] = channel4_CC;
         }
         if (paramChange && channel4 == 1) {
           channel4_MIDI--;
           if (channel4_MIDI < CHANNEL_MIDI_MIN) {
             channel4_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[3][1] = channel4_MIDI;
         }
         updatechannel4();
         break;
@@ -2359,18 +2685,21 @@ void checkDrumEncoder() {
           if (channel5 < 0) {
             channel5 = CHANNEL_PARAMS;
           }
+          CC_MAP[4][4] = channel5;
         }
         if (paramChange && channel5 == 0) {
           channel5_CC--;
           if (channel5_CC < CHANNEL_CC_MIN) {
             channel5_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[4][0] = channel5_CC;
         }
         if (paramChange && channel5 == 1) {
           channel5_MIDI--;
           if (channel5_MIDI < CHANNEL_MIDI_MIN) {
             channel5_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[4][1] = channel5_MIDI;
         }
         updatechannel5();
         break;
@@ -2385,18 +2714,21 @@ void checkDrumEncoder() {
           if (channel6 < 0) {
             channel6 = CHANNEL_PARAMS;
           }
+          CC_MAP[5][4] = channel6;
         }
         if (paramChange && channel6 == 0) {
           channel6_CC--;
           if (channel6_CC < CHANNEL_CC_MIN) {
             channel6_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[5][0] = channel6_CC;
         }
         if (paramChange && channel6 == 1) {
           channel6_MIDI--;
           if (channel6_MIDI < CHANNEL_MIDI_MIN) {
             channel6_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[5][1] = channel6_MIDI;
         }
         updatechannel6();
         break;
@@ -2411,18 +2743,21 @@ void checkDrumEncoder() {
           if (channel7 < 0) {
             channel7 = CHANNEL_PARAMS;
           }
+          CC_MAP[6][4] = channel7;
         }
         if (paramChange && channel7 == 0) {
           channel7_CC--;
           if (channel7_CC < CHANNEL_CC_MIN) {
             channel7_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[6][0] = channel7_CC;
         }
         if (paramChange && channel7 == 1) {
           channel7_MIDI--;
           if (channel7_MIDI < CHANNEL_MIDI_MIN) {
             channel7_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[6][1] = channel7_MIDI;
         }
         updatechannel7();
         break;
@@ -2437,25 +2772,28 @@ void checkDrumEncoder() {
           if (channel8 < 0) {
             channel8 = CHANNEL_PARAMS;
           }
+          CC_MAP[7][4] = channel8;
         }
         if (paramChange && channel8 == 0) {
           channel8_CC--;
           if (channel8_CC < CHANNEL_CC_MIN) {
             channel8_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[7][0] = channel8_CC;
         }
         if (paramChange && channel8 == 1) {
           channel8_MIDI--;
           if (channel8_MIDI < CHANNEL_MIDI_MIN) {
             channel8_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[7][1] = channel8_MIDI;
         }
         updatechannel8();
         break;
 
       case 10:
         if (polycount > 0) {
-          showCurrentParameterPage("Channel 9", "Poly Mode");
+          showCurrentParameterPage("Channel 9", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2463,25 +2801,28 @@ void checkDrumEncoder() {
           if (channel9 < 0) {
             channel9 = CHANNEL_PARAMS;
           }
+          CC_MAP[8][4] = channel9;
         }
         if (paramChange && channel9 == 0) {
           channel9_CC--;
           if (channel9_CC < CHANNEL_CC_MIN) {
             channel9_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[8][0] = channel9_CC;
         }
         if (paramChange && channel9 == 1) {
           channel9_MIDI--;
           if (channel9_MIDI < CHANNEL_MIDI_MIN) {
             channel9_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[8][1] = channel9_MIDI;
         }
         updatechannel9();
         break;
 
       case 11:
         if (polycount > 1) {
-          showCurrentParameterPage("Channel 10", "Poly Mode");
+          showCurrentParameterPage("Channel 10", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2489,25 +2830,28 @@ void checkDrumEncoder() {
           if (channel10 < 0) {
             channel10 = CHANNEL_PARAMS;
           }
+          CC_MAP[9][4] = channel10;
         }
         if (paramChange && channel10 == 0) {
           channel10_CC--;
           if (channel10_CC < CHANNEL_CC_MIN) {
             channel10_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[9][0] = channel10_CC;
         }
         if (paramChange && channel10 == 1) {
           channel10_MIDI--;
           if (channel10_MIDI < CHANNEL_MIDI_MIN) {
             channel10_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[9][1] = channel10_MIDI;
         }
         updatechannel10();
         break;
 
       case 12:
         if (polycount > 2) {
-          showCurrentParameterPage("Channel 11", "Poly Mode");
+          showCurrentParameterPage("Channel 11", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2515,25 +2859,28 @@ void checkDrumEncoder() {
           if (channel11 < 0) {
             channel11 = CHANNEL_PARAMS;
           }
+          CC_MAP[10][4] = channel11;
         }
         if (paramChange && channel11 == 0) {
           channel11_CC--;
           if (channel11_CC < CHANNEL_CC_MIN) {
             channel11_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[10][0] = channel11_CC;
         }
         if (paramChange && channel11 == 1) {
           channel11_MIDI--;
           if (channel11_MIDI < CHANNEL_MIDI_MIN) {
             channel11_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[10][1] = channel11_MIDI;
         }
         updatechannel11();
         break;
 
       case 13:
         if (polycount > 3) {
-          showCurrentParameterPage("Channel 12", "Poly Mode");
+          showCurrentParameterPage("Channel 12", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2541,25 +2888,28 @@ void checkDrumEncoder() {
           if (channel12 < 0) {
             channel12 = CHANNEL_PARAMS;
           }
+          CC_MAP[11][4] = channel12;
         }
         if (paramChange && channel12 == 0) {
           channel12_CC--;
           if (channel12_CC < CHANNEL_CC_MIN) {
             channel12_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[11][0] = channel12_CC;
         }
         if (paramChange && channel12 == 1) {
           channel12_MIDI--;
           if (channel12_MIDI < CHANNEL_MIDI_MIN) {
             channel12_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[11][1] = channel12_MIDI;
         }
         updatechannel12();
         break;
 
       case 14:
         if (polycount > 4) {
-          showCurrentParameterPage("Channel 13", "Poly Mode");
+          showCurrentParameterPage("Channel 13", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2567,25 +2917,28 @@ void checkDrumEncoder() {
           if (channel13 < 0) {
             channel13 = CHANNEL_PARAMS;
           }
+          CC_MAP[12][4] = channel13;
         }
         if (paramChange && channel13 == 0) {
           channel13_CC--;
           if (channel13_CC < CHANNEL_CC_MIN) {
             channel13_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[12][0] = channel13_CC;
         }
         if (paramChange && channel13 == 1) {
           channel13_MIDI--;
           if (channel13_MIDI < CHANNEL_MIDI_MIN) {
             channel13_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[12][1] = channel13_MIDI;
         }
         updatechannel13();
         break;
 
       case 15:
         if (polycount > 5) {
-          showCurrentParameterPage("Channel 14", "Poly Mode");
+          showCurrentParameterPage("Channel 14", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2593,25 +2946,28 @@ void checkDrumEncoder() {
           if (channel14 < 0) {
             channel14 = CHANNEL_PARAMS;
           }
+          CC_MAP[13][4] = channel14;
         }
         if (paramChange && channel14 == 0) {
           channel14_CC--;
           if (channel14_CC < CHANNEL_CC_MIN) {
             channel14_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[13][0] = channel14_CC;
         }
         if (paramChange && channel14 == 1) {
           channel14_MIDI--;
           if (channel14_MIDI < CHANNEL_MIDI_MIN) {
             channel14_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[13][1] = channel14_MIDI;
         }
         updatechannel14();
         break;
 
       case 16:
         if (polycount > 6) {
-          showCurrentParameterPage("Channel 15", "Poly Mode");
+          showCurrentParameterPage("Channel 15", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2619,25 +2975,28 @@ void checkDrumEncoder() {
           if (channel15 < 0) {
             channel15 = CHANNEL_PARAMS;
           }
+          CC_MAP[14][4] = channel15;
         }
         if (paramChange && channel15 == 0) {
           channel15_CC--;
           if (channel15_CC < CHANNEL_CC_MIN) {
             channel15_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[14][0] = channel15_CC;
         }
         if (paramChange && channel15 == 1) {
           channel15_MIDI--;
           if (channel15_MIDI < CHANNEL_MIDI_MIN) {
             channel15_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[14][1] = channel15_MIDI;
         }
         updatechannel15();
         break;
 
       case 17:
         if (polycount > 7) {
-          showCurrentParameterPage("Channel 16", "Poly Mode");
+          showCurrentParameterPage("Channel 16", "Velocity Mode");
           break;
         }
         if (paramEdit) {
@@ -2645,25 +3004,28 @@ void checkDrumEncoder() {
           if (channel16 < 36) {
             channel16 = CHANNEL_PARAMS;
           }
+          CC_MAP[15][4] = channel16;
         }
         if (paramChange && channel16 == 0) {
           channel16_CC--;
           if (channel16_CC < CHANNEL_CC_MIN) {
             channel16_CC = CHANNEL_CC_MAX;
           }
+          CC_MAP[15][0] = channel16_CC;
         }
         if (paramChange && channel16 == 1) {
           channel16_MIDI--;
           if (channel16_MIDI < CHANNEL_MIDI_MIN) {
             channel16_MIDI = CHANNEL_MIDI_MAX;
           }
+          CC_MAP[15][1] = channel16_MIDI;
         }
         updatechannel16();
         break;
 
       case 18:
         if (polycount > 0) {
-          showCurrentParameterPage("Gate 1", "Poly Mode");
+          showCurrentParameterPage("Gate 1", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2677,7 +3039,7 @@ void checkDrumEncoder() {
 
       case 19:
         if (polycount > 1) {
-          showCurrentParameterPage("Gate 2", "Poly Mode");
+          showCurrentParameterPage("Gate 2", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2691,7 +3053,7 @@ void checkDrumEncoder() {
 
       case 20:
         if (polycount > 2) {
-          showCurrentParameterPage("Gate 3", "Poly Mode");
+          showCurrentParameterPage("Gate 3", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2705,7 +3067,7 @@ void checkDrumEncoder() {
 
       case 21:
         if (polycount > 3) {
-          showCurrentParameterPage("Gate 4", "Poly Mode");
+          showCurrentParameterPage("Gate 4", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2719,7 +3081,7 @@ void checkDrumEncoder() {
 
       case 22:
         if (polycount > 4) {
-          showCurrentParameterPage("Gate 5", "Poly Mode");
+          showCurrentParameterPage("Gate 5", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2733,7 +3095,7 @@ void checkDrumEncoder() {
 
       case 23:
         if (polycount > 5) {
-          showCurrentParameterPage("Gate 6", "Poly Mode");
+          showCurrentParameterPage("Gate 6", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2747,7 +3109,7 @@ void checkDrumEncoder() {
 
       case 24:
         if (polycount > 6) {
-          showCurrentParameterPage("Gate 7", "Poly Mode");
+          showCurrentParameterPage("Gate 7", "Gate Mode");
           break;
         }
         if (paramEdit) {
@@ -2761,7 +3123,7 @@ void checkDrumEncoder() {
 
       case 25:
         if (polycount > 7) {
-          showCurrentParameterPage("Gate 8", "Poly Mode");
+          showCurrentParameterPage("Gate 8", "Gate Mode");
           break;
         }
         if (paramEdit) {

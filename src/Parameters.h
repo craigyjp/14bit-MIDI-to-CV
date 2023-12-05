@@ -14,17 +14,20 @@ uint8_t GATE_PINS[8] = {
 uint8_t GATE_NOTES[8] = {
 };
 
-Gate GATE1(0);
-Gate GATE2(1);
-Gate GATE3(2);
-Gate GATE4(3);
-Gate GATE5(4);
-Gate GATE6(5);
-Gate GATE7(6);
-Gate GATE8(7);
+// Gate GATE1(0);
+// Gate GATE2(1);
+// Gate GATE3(2);
+// Gate GATE4(3);
+// Gate GATE5(4);
+// Gate GATE6(5);
+// Gate GATE7(6);
+// Gate GATE8(7);
 
-Gate *GATES[] = {&GATE1, &GATE2, &GATE3, &GATE4, &GATE5, &GATE6, &GATE7, &GATE8};
+// Gate *GATES[] = {&GATE1, &GATE2, &GATE3, &GATE4, &GATE5, &GATE6, &GATE7, &GATE8};
 int LED_IS_ON = 0;
+
+uint8_t CC_MAP[16][5] = {
+};
 
 float sfAdj[8];
 
@@ -37,6 +40,11 @@ int param_number = 0;
 int param_change = 0;
 boolean paramEdit = false;
 boolean paramChange = false;
+
+int value99 = 0;
+int value98 = 0;
+int value6 = 0;
+int value38 = 0;
 
 unsigned int mV1;
 unsigned int mV2;

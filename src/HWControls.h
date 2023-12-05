@@ -118,4 +118,21 @@ void setupHardware() {
   pinMode(SAVE_SW, INPUT_PULLUP);
   pinMode(SETTINGS_SW, INPUT_PULLUP);
   pinMode(BACK_SW, INPUT_PULLUP);
+
+  CC_MAP[0][3] = NOTE1;
+  CC_MAP[1][3] = NOTE2;
+  CC_MAP[2][3] = NOTE3;
+  CC_MAP[3][3] = NOTE4;
+  CC_MAP[4][3] = NOTE5;
+  CC_MAP[5][3] = NOTE6;
+  CC_MAP[6][3] = NOTE7;
+  CC_MAP[7][3] = NOTE8;
+  CC_MAP[8][3] = VELOCITY1;
+  CC_MAP[9][3] = VELOCITY2;
+  CC_MAP[10][3] = VELOCITY3;
+  CC_MAP[11][3] = VELOCITY4;
+  CC_MAP[12][3] = VELOCITY5;
+  CC_MAP[13][3] = VELOCITY6;
+  CC_MAP[14][3] = VELOCITY7;
+  CC_MAP[15][3] = VELOCITY8;
 }
