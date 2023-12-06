@@ -1,4 +1,4 @@
-const char* VERSION = "V1.3";
+const char* VERSION = "V1.5";
 
 #define NO_OF_PARAMS 64
 const char* INITPATCHNAME = "Initial Patch";

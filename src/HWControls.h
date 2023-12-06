@@ -37,6 +37,10 @@
 #define GATE_NOTE7 6
 #define GATE_NOTE8 7
 
+#define CLOCK_LED 8
+#define CLOCK_RESET 9
+
+
 //Encoder or buttons
 #define ENC_A 38
 #define ENC_B 37
@@ -55,12 +59,12 @@
 static long encPrevious = 0;
 static long param_encPrevious = 0;
 
-TButton recallButton{RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton saveButton{SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton settingsButton{SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton backButton{BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
+TButton recallButton{ RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton saveButton{ SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton settingsButton{ SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton backButton{ BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
 
-Encoder encoder(ENC_B, ENC_A); //This often needs the pins swapping depending on the encoder
+Encoder encoder(ENC_B, ENC_A);  //This often needs the pins swapping depending on the encoder
 Encoder param_encoder(ENCODER_PARAMA, ENCODER_PARAMB);
 
 void setupHardware() {
@@ -112,6 +116,29 @@ void setupHardware() {
   analogWriteFrequency(WHEEL, 9155.27);
   analogWriteFrequency(AFTERTOUCH, 9155.27);
   analogWriteFrequency(BREATH, 9155.27);
+
+  analogWrite(PITCHBEND, 1543);
+  analogWrite(WHEEL, 0);
+  analogWrite(AFTERTOUCH, 0);
+  analogWrite(BREATH, 0);
+
+  analogWrite(NOTE1, 0);
+  analogWrite(NOTE2, 0);
+  analogWrite(NOTE3, 0);
+  analogWrite(NOTE4, 0);
+  analogWrite(NOTE5, 0);
+  analogWrite(NOTE6, 0);
+  analogWrite(NOTE7, 0);
+  analogWrite(NOTE8, 0);
+
+  analogWrite(VELOCITY1, 0);
+  analogWrite(VELOCITY2, 0);
+  analogWrite(VELOCITY3, 0);
+  analogWrite(VELOCITY4, 0);
+  analogWrite(VELOCITY5, 0);
+  analogWrite(VELOCITY6, 0);
+  analogWrite(VELOCITY7, 0);
+  analogWrite(VELOCITY8, 0);
 
   pinMode(RECALL_SW, INPUT_PULLUP);
   pinMode(PARAM_SW, INPUT_PULLUP);

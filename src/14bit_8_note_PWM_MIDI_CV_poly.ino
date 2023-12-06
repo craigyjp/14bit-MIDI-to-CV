@@ -17,19 +17,18 @@
 */
 
 #include <SPI.h>
-//#include <Wire.h>
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
 #include "MidiCC.h"
 #include "Constants.h"
-//#include "Gate.h"
 #include "Parameters.h"
 #include "PatchMgr.h"
 #include <USBHost_t36.h>
 #include "HWControls.h"
 #include "EepromMgr.h"
 #include "Settings.h"
+#include <ShiftRegister74HC595.h>
 #include <RoxMux.h>
 
 // OLED I2C is used on pins 18 and 19 for Teensy 3.x
@@ -95,20 +94,12 @@ int channel = 1;
 
 int patchNo = 1;  //Current patch no
 
-#define MUX_TOTAL 4
-Rox74HC595<MUX_TOTAL> sr;
-#define PIN_DATA 30   // pin 14 on 74HC595 (DATA)
-#define PIN_LATCH 32  // pin 12 on 74HC595 (LATCH)
-#define PIN_CLK 31    // pin 11 on 74HC595 (CLK)
-#define PIN_PWM -1    // pin 13 on 74HC595
+// parameters: <number of shift registers> (data pin, clock pin, latch pin)
+ShiftRegister74HC595<4> sr(30, 31, 32);
 
 RoxButton paramButton;
 
-
-
 void setup() {
-
-  sr.begin(PIN_DATA, PIN_LATCH, PIN_CLK, PIN_PWM);
 
   if (!display.begin(SSD1306_SWITCHCAPVCC)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -154,6 +145,10 @@ void setup() {
   MIDI.setHandlePitchBend(myPitchBend);
   MIDI.setHandleControlChange(myControlChange);
   MIDI.setHandleAfterTouchChannel(myAfterTouch);
+  MIDI.setHandleClock(myClock);
+  MIDI.setHandleStart(myStart);
+  MIDI.setHandleStop(myStop);
+  MIDI.setHandleContinue(myContinue);
   Serial.println("MIDI In DIN Listening");
 
   //USB Client MIDI
@@ -162,6 +157,10 @@ void setup() {
   usbMIDI.setHandleNoteOn(myNoteOn);
   usbMIDI.setHandlePitchChange(myPitchBend);
   usbMIDI.setHandleAfterTouchChannel(myAfterTouch);
+  usbMIDI.setHandleClock(myClock);
+  usbMIDI.setHandleStart(myStart);
+  usbMIDI.setHandleStop(myStop);
+  usbMIDI.setHandleContinue(myContinue);
   Serial.println("USB Client MIDI Listening");
 
   // Read Settings from EEPROM
@@ -193,9 +192,49 @@ void setup() {
   if (octave == 3) realoctave = 12;
   if (octave == 4) realoctave = 24;
 
-  analogWrite(PITCHBEND, 1543);
+  sr.set(CLOCK_RESET, LOW);
 
   recallPatch(1);
+}
+
+void myClock() {
+  if (millis() > clock_timeout + 300) clock_count = 0;  // Prevents Clock from starting in between quarter notes after clock is restarted!
+  clock_timeout = millis();
+
+  if (clock_count == 0) {
+    //digitalWriteFast(CLOCK_LED, HIGH);  // Start clock pulse
+    sr.set(CLOCK_LED, HIGH);
+    clock_timer = millis();
+  }
+  clock_count++;
+  if (clock_count == 24) {  // MIDI timing clock sends 24 pulses per quarter note.  Sent pulse only once every 24 pulses
+    clock_count = 0;
+  }
+}
+
+// void myClock() {
+//   if (Clock <= 4) {
+//     if (SetTempoActive) {
+//       digitalWrite(CLOCK_LED, HIGH);
+//     }
+//   } else {
+//     digitalWrite(CLOCK_LED, LOW);
+//   }
+//   Clock = (Clock + 1) % 24;
+// }
+
+void myStart() {
+  Clock = 0;
+}
+
+void myStop() {
+  sr.set(CLOCK_RESET, HIGH);
+  sr.set(CLOCK_LED, LOW);
+  sr.set(CLOCK_RESET, LOW);
+}
+
+void myContinue() {
+  Clock = 0;
 }
 
 void myPitchBend(byte channel, int bend) {
@@ -785,7 +824,7 @@ void commandTopNote() {
   if (noteActive)
     commandNote(topNote);
   else  // All notes are off, turn off gate
-    sr.writePin(GATE_NOTE1, LOW);
+    sr.set(GATE_NOTE1, LOW);
 }
 
 void commandBottomNote() {
@@ -802,7 +841,7 @@ void commandBottomNote() {
   if (noteActive)
     commandNote(bottomNote);
   else  // All notes are off, turn off gate
-    sr.writePin(GATE_NOTE1, LOW);
+    sr.set(GATE_NOTE1, LOW);
 }
 
 void commandLastNote() {
@@ -816,13 +855,13 @@ void commandLastNote() {
       return;
     }
   }
-  sr.writePin(GATE_NOTE1, LOW);  // All notes are off
+  sr.set(GATE_NOTE1, LOW);  // All notes are off
 }
 
 void commandNote(int noteMsg) {
   unsigned int mV = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
   analogWrite(NOTE1, mV);
-  sr.writePin(GATE_NOTE1, HIGH);
+  sr.set(GATE_NOTE1, HIGH);
 }
 
 void commandTopNoteUni() {
@@ -879,63 +918,63 @@ void commandLastNoteUni() {
 void updateGates(int gatestate) {
   switch (polycount) {
     case 1:
-      sr.writePin(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
       break;
 
     case 2:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
       break;
 
     case 3:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
       break;
 
     case 4:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
-      sr.writePin(GATE_NOTE4, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE4, gatestate);
       break;
 
     case 5:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
-      sr.writePin(GATE_NOTE4, gatestate);
-      sr.writePin(GATE_NOTE5, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE4, gatestate);
+      sr.set(GATE_NOTE5, gatestate);
       break;
 
     case 6:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
-      sr.writePin(GATE_NOTE4, gatestate);
-      sr.writePin(GATE_NOTE5, gatestate);
-      sr.writePin(GATE_NOTE6, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE4, gatestate);
+      sr.set(GATE_NOTE5, gatestate);
+      sr.set(GATE_NOTE6, gatestate);
       break;
 
     case 7:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
-      sr.writePin(GATE_NOTE4, gatestate);
-      sr.writePin(GATE_NOTE5, gatestate);
-      sr.writePin(GATE_NOTE6, gatestate);
-      sr.writePin(GATE_NOTE7, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE4, gatestate);
+      sr.set(GATE_NOTE5, gatestate);
+      sr.set(GATE_NOTE6, gatestate);
+      sr.set(GATE_NOTE7, gatestate);
       break;
 
     case 8:
-      sr.writePin(GATE_NOTE1, gatestate);
-      sr.writePin(GATE_NOTE2, gatestate);
-      sr.writePin(GATE_NOTE3, gatestate);
-      sr.writePin(GATE_NOTE4, gatestate);
-      sr.writePin(GATE_NOTE5, gatestate);
-      sr.writePin(GATE_NOTE6, gatestate);
-      sr.writePin(GATE_NOTE7, gatestate);
-      sr.writePin(GATE_NOTE8, gatestate);
+      sr.set(GATE_NOTE1, gatestate);
+      sr.set(GATE_NOTE2, gatestate);
+      sr.set(GATE_NOTE3, gatestate);
+      sr.set(GATE_NOTE4, gatestate);
+      sr.set(GATE_NOTE5, gatestate);
+      sr.set(GATE_NOTE6, gatestate);
+      sr.set(GATE_NOTE7, gatestate);
+      sr.set(GATE_NOTE8, gatestate);
   }
 }
 
@@ -1060,7 +1099,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[0].velocity = velocity;
           voices[0].timeOn = millis();
           updateVoice1();
-          sr.writePin(GATE_NOTE1, HIGH);
+          sr.set(GATE_NOTE1, HIGH);
           voiceOn[0] = true;
           break;
 
@@ -1069,7 +1108,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[1].velocity = velocity;
           voices[1].timeOn = millis();
           updateVoice2();
-          sr.writePin(GATE_NOTE2, HIGH);
+          sr.set(GATE_NOTE2, HIGH);
           voiceOn[1] = true;
           break;
 
@@ -1078,7 +1117,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[2].velocity = velocity;
           voices[2].timeOn = millis();
           updateVoice3();
-          sr.writePin(GATE_NOTE3, HIGH);
+          sr.set(GATE_NOTE3, HIGH);
           voiceOn[2] = true;
           break;
 
@@ -1087,7 +1126,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[3].velocity = velocity;
           voices[3].timeOn = millis();
           updateVoice4();
-          sr.writePin(GATE_NOTE4, HIGH);
+          sr.set(GATE_NOTE4, HIGH);
           voiceOn[3] = true;
           break;
 
@@ -1096,7 +1135,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[4].velocity = velocity;
           voices[4].timeOn = millis();
           updateVoice5();
-          sr.writePin(GATE_NOTE5, HIGH);
+          sr.set(GATE_NOTE5, HIGH);
           voiceOn[4] = true;
           break;
 
@@ -1105,7 +1144,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[5].velocity = velocity;
           voices[5].timeOn = millis();
           updateVoice6();
-          sr.writePin(GATE_NOTE6, HIGH);
+          sr.set(GATE_NOTE6, HIGH);
           voiceOn[5] = true;
           break;
 
@@ -1114,7 +1153,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[6].velocity = velocity;
           voices[6].timeOn = millis();
           updateVoice7();
-          sr.writePin(GATE_NOTE7, HIGH);
+          sr.set(GATE_NOTE7, HIGH);
           voiceOn[6] = true;
           break;
 
@@ -1123,7 +1162,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[7].velocity = velocity;
           voices[7].timeOn = millis();
           updateVoice8();
-          sr.writePin(GATE_NOTE8, HIGH);
+          sr.set(GATE_NOTE8, HIGH);
           voiceOn[7] = true;
           break;
       }
@@ -1244,7 +1283,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   if (channel == gateChannel) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
-        sr.writePin(pin_index, HIGH);
+        sr.set(pin_index, HIGH);
       }
     }
   }
@@ -1255,42 +1294,42 @@ void myNoteOff(byte channel, byte note, byte velocity) {
     if (keyboardMode == 0) {
       switch (getVoiceNo(note)) {
         case 1:
-          sr.writePin(GATE_NOTE1, LOW);
+          sr.set(GATE_NOTE1, LOW);
           voices[0].note = -1;
           voiceOn[0] = false;
           break;
         case 2:
-          sr.writePin(GATE_NOTE2, LOW);
+          sr.set(GATE_NOTE2, LOW);
           voices[1].note = -1;
           voiceOn[1] = false;
           break;
         case 3:
-          sr.writePin(GATE_NOTE3, LOW);
+          sr.set(GATE_NOTE3, LOW);
           voices[2].note = -1;
           voiceOn[2] = false;
           break;
         case 4:
-          sr.writePin(GATE_NOTE4, LOW);
+          sr.set(GATE_NOTE4, LOW);
           voices[3].note = -1;
           voiceOn[3] = false;
           break;
         case 5:
-          sr.writePin(GATE_NOTE5, LOW);
+          sr.set(GATE_NOTE5, LOW);
           voices[4].note = -1;
           voiceOn[4] = false;
           break;
         case 6:
-          sr.writePin(GATE_NOTE6, LOW);
+          sr.set(GATE_NOTE6, LOW);
           voices[5].note = -1;
           voiceOn[5] = false;
           break;
         case 7:
-          sr.writePin(GATE_NOTE7, LOW);
+          sr.set(GATE_NOTE7, LOW);
           voices[6].note = -1;
           voiceOn[6] = false;
           break;
         case 8:
-          sr.writePin(GATE_NOTE8, LOW);
+          sr.set(GATE_NOTE8, LOW);
           voices[7].note = -1;
           voiceOn[7] = false;
           break;
@@ -1415,7 +1454,7 @@ void myNoteOff(byte channel, byte note, byte velocity) {
   if (channel == gateChannel) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
-        sr.writePin(pin_index, LOW);
+        sr.set(pin_index, LOW);
       }
     }
   }
@@ -1535,14 +1574,14 @@ void updateUnisonCheck() {
 }
 
 void allNotesOff() {
-  sr.writePin(GATE_NOTE1, LOW);
-  sr.writePin(GATE_NOTE2, LOW);
-  sr.writePin(GATE_NOTE3, LOW);
-  sr.writePin(GATE_NOTE4, LOW);
-  sr.writePin(GATE_NOTE5, LOW);
-  sr.writePin(GATE_NOTE6, LOW);
-  sr.writePin(GATE_NOTE7, LOW);
-  sr.writePin(GATE_NOTE8, LOW);
+  sr.set(GATE_NOTE1, LOW);
+  sr.set(GATE_NOTE2, LOW);
+  sr.set(GATE_NOTE3, LOW);
+  sr.set(GATE_NOTE4, LOW);
+  sr.set(GATE_NOTE5, LOW);
+  sr.set(GATE_NOTE6, LOW);
+  sr.set(GATE_NOTE7, LOW);
+  sr.set(GATE_NOTE8, LOW);
 
   voices[0].note = -1;
   voices[1].note = -1;
@@ -3399,7 +3438,11 @@ void loop() {
   midi1.read(0);    //USB HOST MIDI Class Compliant
   MIDI.read(0);     //MIDI 5 Pin DIN
   usbMIDI.read(0);  //USB Client MIDI
-  sr.update();
+
+  if ((clock_timer > 0) && (millis() - clock_timer > 40)) {
+    sr.set(CLOCK_LED, LOW);
+    clock_timer = 0;
+  }
 }
 
 

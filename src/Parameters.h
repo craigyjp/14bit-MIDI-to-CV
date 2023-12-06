@@ -1,4 +1,5 @@
-// Parameters
+static unsigned long clock_timer = 0, clock_timeout = 0;
+static unsigned int clock_count = 0;
 
 uint8_t GATE_PINS[8] = {
   0,
@@ -24,7 +25,7 @@ uint8_t GATE_NOTES[8] = {
 // Gate GATE8(7);
 
 // Gate *GATES[] = {&GATE1, &GATE2, &GATE3, &GATE4, &GATE5, &GATE6, &GATE7, &GATE8};
-int LED_IS_ON = 0;
+
 
 uint8_t CC_MAP[16][5] = {
 };
@@ -39,12 +40,14 @@ boolean param_encCW = true;
 int param_number = 0;
 int param_change = 0;
 boolean paramEdit = false;
+boolean SetTempoActive = true;
 boolean paramChange = false;
+uint16_t Clock; 
 
-int value99 = 0;
-int value98 = 0;
-int value6 = 0;
-int value38 = 0;
+int value99;
+int value98;
+int value6;
+int value38;
 
 unsigned int mV1;
 unsigned int mV2;
