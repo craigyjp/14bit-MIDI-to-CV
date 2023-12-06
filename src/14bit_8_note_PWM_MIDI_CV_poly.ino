@@ -254,13 +254,15 @@ void myControlChange(byte channel, byte number, byte value) {
       }
 
       if (CC_MAP[i][4] == 4) {
-        value6 = map(value6, 0, 1023, 0, 7720);
-        analogWrite(CC_MAP[i][3], value6);
+        uint16_t combinedNumber = (value6 << 7) | value38;
+        combinedNumber = map(combinedNumber, 0, 1023, 0, 7720);
+        analogWrite(CC_MAP[i][3], combinedNumber);
       }
 
       if (CC_MAP[i][4] == 5) {
-        value6 = map(value6, 0, 1023, 0, 15440);
-        analogWrite(CC_MAP[i][3], value6);
+        uint16_t combinedNumber = (value6 << 7) | value38;
+        combinedNumber = map(combinedNumber, 0, 1023, 0, 15440);
+        analogWrite(CC_MAP[i][3], combinedNumber);
       }
     }
   }
