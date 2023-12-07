@@ -19,3 +19,4 @@ All assignments can be stored in memories and recalled from the patch menu and n
 * Transpose
 * Octave Shift
 * Unison Mode with note priority.
+* MIDI Clock output with divide by 1, 2, 4 & 8 and reset output on play.
