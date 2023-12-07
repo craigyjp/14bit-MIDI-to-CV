@@ -11,7 +11,9 @@ All assignments can be stored in memories and recalled from the patch menu and n
 * Menu driven setup
 * Up to 8 note polyphonic MIDI to CV with velocity
 * 16 Assignable CV outputs
-* 4 Fixed CV outputs
+* 4 Fixed CV outputs on the poly MIDI channel
+* NRPN outputs 1024 steps, 0-5V or 0-10V
+* CC outputs 128 steps, 0-5V or 0-10V
 * 8 Assignable gates
 * MIDI channel assignment
 * Transpose
