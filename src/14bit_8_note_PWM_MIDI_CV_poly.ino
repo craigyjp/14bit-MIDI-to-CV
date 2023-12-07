@@ -225,6 +225,8 @@ void myClock() {
 
 void myStart() {
   Clock = 0;
+  sr.set(RESET, HIGH);
+  reset_timer = millis();
 }
 
 void myStop() {
@@ -3549,6 +3551,11 @@ void ledsOff() {
   if ((breath_timer > 0) && (millis() - breath_timer > 60)) {
     sr.set(BREATH_LED, LOW);
     breath_timer = 0;
+  }
+
+  if ((reset_timer > 0) && (millis() - reset_timer > 60)) {
+    sr.set(RESET, LOW);
+    reset_timer = 0;
   }
 
   for (int i = 0; i < 16; i++) {

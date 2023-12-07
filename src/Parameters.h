@@ -5,6 +5,7 @@ static unsigned long pitchbend_timer = 0;
 static unsigned long mod_timer = 0;
 static unsigned long aftertouch_timer = 0;
 static unsigned long breath_timer = 0;
+static unsigned long reset_timer = 0;
 
 unsigned long outputLEDS[16] = {
 };

@@ -43,6 +43,7 @@
 #define MOD_LED 11
 #define AFTERTOUCH_LED 12
 #define BREATH_LED 13
+#define RESET 14
 
 #define NOTE1_LED 16
 #define NOTE2_LED 17
