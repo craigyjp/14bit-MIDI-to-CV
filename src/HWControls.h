@@ -39,6 +39,28 @@
 
 #define CLOCK_LED 8
 #define CLOCK_RESET 9
+#define PITCHBEND_LED 10
+#define MOD_LED 11
+#define AFTERTOUCH_LED 12
+#define BREATH_LED 13
+
+#define NOTE1_LED 16
+#define NOTE2_LED 17
+#define NOTE3_LED 18
+#define NOTE4_LED 19
+#define NOTE5_LED 20
+#define NOTE6_LED 21
+#define NOTE7_LED 22
+#define NOTE8_LED 23
+
+#define VELOCITY1_LED 24
+#define VELOCITY2_LED 25
+#define VELOCITY3_LED 26
+#define VELOCITY4_LED 27
+#define VELOCITY5_LED 28
+#define VELOCITY6_LED 29
+#define VELOCITY7_LED 30
+#define VELOCITY8_LED 31
 
 
 //Encoder or buttons
@@ -162,4 +184,21 @@ void setupHardware() {
   CC_MAP[13][3] = VELOCITY6;
   CC_MAP[14][3] = VELOCITY7;
   CC_MAP[15][3] = VELOCITY8;
+
+  CC_MAP[0][5] = NOTE1_LED;
+  CC_MAP[1][5] = NOTE2_LED;
+  CC_MAP[2][5] = NOTE3_LED;
+  CC_MAP[3][5] = NOTE4_LED;
+  CC_MAP[4][5] = NOTE5_LED;
+  CC_MAP[5][5] = NOTE6_LED;
+  CC_MAP[6][5] = NOTE7_LED;
+  CC_MAP[7][5] = NOTE8_LED;
+  CC_MAP[8][5] = VELOCITY1_LED;
+  CC_MAP[9][5] = VELOCITY2_LED;
+  CC_MAP[10][5] = VELOCITY3_LED;
+  CC_MAP[11][5] = VELOCITY4_LED;
+  CC_MAP[12][5] = VELOCITY5_LED;
+  CC_MAP[13][5] = VELOCITY6_LED;
+  CC_MAP[14][5] = VELOCITY7_LED;
+  CC_MAP[15][5] = VELOCITY8_LED;
 }

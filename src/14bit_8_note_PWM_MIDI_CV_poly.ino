@@ -241,6 +241,8 @@ void myPitchBend(byte channel, int bend) {
   if (channel == midiChannel) {
     int newbend = map(bend, -8191, 8192, 0, 3087);
     analogWrite(PITCHBEND, newbend);
+    sr.set(PITCHBEND_LED, HIGH);
+    pitchbend_timer = millis();
   }
 }
 
@@ -250,12 +252,16 @@ void myControlChange(byte channel, byte number, byte value) {
       int newvalue = value;
       newvalue = map(newvalue, 0, 127, 0, 7720);
       analogWrite(WHEEL, newvalue);
+      sr.set(MOD_LED, HIGH);
+      mod_timer = millis();
     }
 
     if (number == 2) {
       int newvalue = value;
       newvalue = map(newvalue, 0, 127, 0, 7720);
       analogWrite(BREATH, newvalue);
+      sr.set(BREATH_LED, HIGH);
+      breath_timer = millis();
     }
   }
 
@@ -267,11 +273,15 @@ void myControlChange(byte channel, byte number, byte value) {
         if (CC_MAP[i][4] == 2) {
           newvalue = map(newvalue, 0, 127, 0, 7720);
           analogWrite(CC_MAP[i][3], newvalue);
+          sr.set(CC_MAP[i][5], HIGH);
+          outputLEDS[i] = millis();
         }
 
         if (CC_MAP[i][4] == 3) {
           newvalue = map(newvalue, 0, 127, 0, 15440);
           analogWrite(CC_MAP[i][3], newvalue);
+          sr.set(CC_MAP[i][5], HIGH);
+          outputLEDS[i] = millis();
         }
       }
     }
@@ -296,12 +306,16 @@ void myControlChange(byte channel, byte number, byte value) {
         uint16_t combinedNumber = (value6 << 7) | value38;
         combinedNumber = map(combinedNumber, 0, 1023, 0, 7720);
         analogWrite(CC_MAP[i][3], combinedNumber);
+        sr.set(CC_MAP[i][5], HIGH);
+        outputLEDS[i] = millis();
       }
 
       if (CC_MAP[i][4] == 5) {
         uint16_t combinedNumber = (value6 << 7) | value38;
         combinedNumber = map(combinedNumber, 0, 1023, 0, 15440);
         analogWrite(CC_MAP[i][3], combinedNumber);
+        sr.set(CC_MAP[i][5], HIGH);
+        outputLEDS[i] = millis();
       }
     }
   }
@@ -312,6 +326,8 @@ void myAfterTouch(byte channel, byte value) {
     int newvalue = value;
     newvalue = map(newvalue, 0, 127, 0, 7720);
     analogWrite(AFTERTOUCH, newvalue);
+    sr.set(AFTERTOUCH_LED, HIGH);
+    aftertouch_timer = millis();
   }
 }
 
@@ -825,6 +841,7 @@ void commandTopNote() {
     commandNote(topNote);
   else  // All notes are off, turn off gate
     sr.set(GATE_NOTE1, LOW);
+  sr.set(NOTE1_LED, LOW);
 }
 
 void commandBottomNote() {
@@ -842,6 +859,7 @@ void commandBottomNote() {
     commandNote(bottomNote);
   else  // All notes are off, turn off gate
     sr.set(GATE_NOTE1, LOW);
+  sr.set(NOTE1_LED, LOW);
 }
 
 void commandLastNote() {
@@ -856,12 +874,14 @@ void commandLastNote() {
     }
   }
   sr.set(GATE_NOTE1, LOW);  // All notes are off
+  sr.set(NOTE1_LED, LOW);
 }
 
 void commandNote(int noteMsg) {
   unsigned int mV = (unsigned int)((float)(noteMsg + transpose + realoctave) * NOTE_SF * sfAdj[0] + 0.5);
   analogWrite(NOTE1, mV);
   sr.set(GATE_NOTE1, HIGH);
+  sr.set(NOTE1_LED, HIGH);
 }
 
 void commandTopNoteUni() {
@@ -919,17 +939,23 @@ void updateGates(int gatestate) {
   switch (polycount) {
     case 1:
       sr.set(GATE_NOTE1, gatestate);
+      sr.set(NOTE1_LED, gatestate);
       break;
 
     case 2:
       sr.set(GATE_NOTE1, gatestate);
       sr.set(GATE_NOTE2, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
       break;
 
     case 3:
       sr.set(GATE_NOTE1, gatestate);
       sr.set(GATE_NOTE2, gatestate);
       sr.set(GATE_NOTE3, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
       break;
 
     case 4:
@@ -937,6 +963,10 @@ void updateGates(int gatestate) {
       sr.set(GATE_NOTE2, gatestate);
       sr.set(GATE_NOTE3, gatestate);
       sr.set(GATE_NOTE4, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
+      sr.set(NOTE4_LED, gatestate);
       break;
 
     case 5:
@@ -945,6 +975,11 @@ void updateGates(int gatestate) {
       sr.set(GATE_NOTE3, gatestate);
       sr.set(GATE_NOTE4, gatestate);
       sr.set(GATE_NOTE5, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
+      sr.set(NOTE4_LED, gatestate);
+      sr.set(NOTE5_LED, gatestate);
       break;
 
     case 6:
@@ -954,6 +989,12 @@ void updateGates(int gatestate) {
       sr.set(GATE_NOTE4, gatestate);
       sr.set(GATE_NOTE5, gatestate);
       sr.set(GATE_NOTE6, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
+      sr.set(NOTE4_LED, gatestate);
+      sr.set(NOTE5_LED, gatestate);
+      sr.set(NOTE6_LED, gatestate);
       break;
 
     case 7:
@@ -964,6 +1005,13 @@ void updateGates(int gatestate) {
       sr.set(GATE_NOTE5, gatestate);
       sr.set(GATE_NOTE6, gatestate);
       sr.set(GATE_NOTE7, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
+      sr.set(NOTE4_LED, gatestate);
+      sr.set(NOTE5_LED, gatestate);
+      sr.set(NOTE6_LED, gatestate);
+      sr.set(NOTE7_LED, gatestate);
       break;
 
     case 8:
@@ -975,6 +1023,14 @@ void updateGates(int gatestate) {
       sr.set(GATE_NOTE6, gatestate);
       sr.set(GATE_NOTE7, gatestate);
       sr.set(GATE_NOTE8, gatestate);
+      sr.set(NOTE1_LED, gatestate);
+      sr.set(NOTE2_LED, gatestate);
+      sr.set(NOTE3_LED, gatestate);
+      sr.set(NOTE4_LED, gatestate);
+      sr.set(NOTE5_LED, gatestate);
+      sr.set(NOTE6_LED, gatestate);
+      sr.set(NOTE7_LED, gatestate);
+      sr.set(NOTE8_LED, gatestate);
   }
 }
 
@@ -1100,6 +1156,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[0].timeOn = millis();
           updateVoice1();
           sr.set(GATE_NOTE1, HIGH);
+          sr.set(NOTE1_LED, HIGH);
           voiceOn[0] = true;
           break;
 
@@ -1109,6 +1166,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[1].timeOn = millis();
           updateVoice2();
           sr.set(GATE_NOTE2, HIGH);
+          sr.set(NOTE2_LED, HIGH);
           voiceOn[1] = true;
           break;
 
@@ -1118,6 +1176,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[2].timeOn = millis();
           updateVoice3();
           sr.set(GATE_NOTE3, HIGH);
+          sr.set(NOTE3_LED, HIGH);
           voiceOn[2] = true;
           break;
 
@@ -1127,6 +1186,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[3].timeOn = millis();
           updateVoice4();
           sr.set(GATE_NOTE4, HIGH);
+          sr.set(NOTE4_LED, HIGH);
           voiceOn[3] = true;
           break;
 
@@ -1136,6 +1196,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[4].timeOn = millis();
           updateVoice5();
           sr.set(GATE_NOTE5, HIGH);
+          sr.set(NOTE5_LED, HIGH);
           voiceOn[4] = true;
           break;
 
@@ -1145,6 +1206,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[5].timeOn = millis();
           updateVoice6();
           sr.set(GATE_NOTE6, HIGH);
+          sr.set(NOTE6_LED, HIGH);
           voiceOn[5] = true;
           break;
 
@@ -1154,6 +1216,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[6].timeOn = millis();
           updateVoice7();
           sr.set(GATE_NOTE7, HIGH);
+          sr.set(NOTE7_LED, HIGH);
           voiceOn[6] = true;
           break;
 
@@ -1163,6 +1226,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
           voices[7].timeOn = millis();
           updateVoice8();
           sr.set(GATE_NOTE8, HIGH);
+          sr.set(NOTE8_LED, HIGH);
           voiceOn[7] = true;
           break;
       }
@@ -1284,6 +1348,7 @@ void myNoteOn(byte channel, byte note, byte velocity) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
         sr.set(pin_index, HIGH);
+        sr.set((pin_index + 16), HIGH);
       }
     }
   }
@@ -1295,41 +1360,49 @@ void myNoteOff(byte channel, byte note, byte velocity) {
       switch (getVoiceNo(note)) {
         case 1:
           sr.set(GATE_NOTE1, LOW);
+          sr.set(NOTE1_LED, LOW);
           voices[0].note = -1;
           voiceOn[0] = false;
           break;
         case 2:
           sr.set(GATE_NOTE2, LOW);
+          sr.set(NOTE2_LED, LOW);
           voices[1].note = -1;
           voiceOn[1] = false;
           break;
         case 3:
           sr.set(GATE_NOTE3, LOW);
+          sr.set(NOTE3_LED, LOW);
           voices[2].note = -1;
           voiceOn[2] = false;
           break;
         case 4:
           sr.set(GATE_NOTE4, LOW);
+          sr.set(NOTE4_LED, LOW);
           voices[3].note = -1;
           voiceOn[3] = false;
           break;
         case 5:
           sr.set(GATE_NOTE5, LOW);
+          sr.set(NOTE5_LED, LOW);
           voices[4].note = -1;
           voiceOn[4] = false;
           break;
         case 6:
           sr.set(GATE_NOTE6, LOW);
+          sr.set(NOTE6_LED, LOW);
           voices[5].note = -1;
           voiceOn[5] = false;
           break;
         case 7:
           sr.set(GATE_NOTE7, LOW);
+          sr.set(NOTE7_LED, LOW);
           voices[6].note = -1;
           voiceOn[6] = false;
           break;
         case 8:
           sr.set(GATE_NOTE8, LOW);
+          sr.set(NOTE8_LED, LOW);
           voices[7].note = -1;
           voiceOn[7] = false;
           break;
@@ -1455,6 +1528,7 @@ void myNoteOff(byte channel, byte note, byte velocity) {
     for (uint8_t pin_index = polycount; pin_index < 8; pin_index++) {
       if (GATE_NOTES[pin_index] == note) {
         sr.set(pin_index, LOW);
+        sr.set((pin_index + 16), LOW);
       }
     }
   }
@@ -1582,6 +1656,15 @@ void allNotesOff() {
   sr.set(GATE_NOTE6, LOW);
   sr.set(GATE_NOTE7, LOW);
   sr.set(GATE_NOTE8, LOW);
+
+  sr.set(NOTE1_LED, LOW);
+  sr.set(NOTE2_LED, LOW);
+  sr.set(NOTE3_LED, LOW);
+  sr.set(NOTE4_LED, LOW);
+  sr.set(NOTE5_LED, LOW);
+  sr.set(NOTE6_LED, LOW);
+  sr.set(NOTE7_LED, LOW);
+  sr.set(NOTE8_LED, LOW);
 
   voices[0].note = -1;
   voices[1].note = -1;
@@ -3438,10 +3521,43 @@ void loop() {
   midi1.read(0);    //USB HOST MIDI Class Compliant
   MIDI.read(0);     //MIDI 5 Pin DIN
   usbMIDI.read(0);  //USB Client MIDI
+  ledsOff();
+}
 
-  if ((clock_timer > 0) && (millis() - clock_timer > 40)) {
+void ledsOff() {
+
+  if ((clock_timer > 0) && (millis() - clock_timer > 60)) {
     sr.set(CLOCK_LED, LOW);
     clock_timer = 0;
+  }
+
+  if ((pitchbend_timer > 0) && (millis() - pitchbend_timer > 60)) {
+    sr.set(PITCHBEND_LED, LOW);
+    pitchbend_timer = 0;
+  }
+
+  if ((mod_timer > 0) && (millis() - mod_timer > 60)) {
+    sr.set(MOD_LED, LOW);
+    mod_timer = 0;
+  }
+
+  if ((aftertouch_timer > 0) && (millis() - aftertouch_timer > 60)) {
+    sr.set(AFTERTOUCH_LED, LOW);
+    aftertouch_timer = 0;
+  }
+
+  if ((breath_timer > 0) && (millis() - breath_timer > 60)) {
+    sr.set(BREATH_LED, LOW);
+    breath_timer = 0;
+  }
+
+  for (int i = 0; i < 16; i++) {
+    if ((CC_MAP[i][2] == 0 && CC_MAP[i][4] == 2) || (CC_MAP[i][2] == 0 && CC_MAP[i][4] == 3) || (CC_MAP[i][2] == 0 && CC_MAP[i][4] == 4) || (CC_MAP[i][2] == 0 && CC_MAP[i][4] == 5)) {
+      if ((outputLEDS[i] > 0) && (millis() - outputLEDS[i] > 60)) {
+        sr.set(CC_MAP[i][5], LOW);
+        outputLEDS[i] = 0;
+      }
+    }
   }
 }
 
